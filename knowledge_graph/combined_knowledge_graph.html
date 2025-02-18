@@ -1,0 +1,258 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        
+            <script src="lib/bindings/utils.js"></script>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/dist/vis-network.min.css" integrity="sha512-WgxfT5LWjfszlPHXRmBWHkV2eceiWTOBvrKCNbdgDYTHrT2AeLCGbF4sZlZw3UMN3WtL0tGUoIAKsu8mllg/XA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/vis-network.min.js" integrity="sha512-LnvoEWDFrqGHlHmDD2101OrLcbsfkrzoSpvtSQtxK3RMnRV0eOkhhBN2dXHKRrUU8p2DGRTk35n4O8nWSVe1mQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+            
+        
+<center>
+<h1></h1>
+</center>
+
+<!-- <link rel="stylesheet" href="../node_modules/vis/dist/vis.min.css" type="text/css" />
+<script type="text/javascript" src="../node_modules/vis/dist/vis.js"> </script>-->
+        <link
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css"
+          rel="stylesheet"
+          integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6"
+          crossorigin="anonymous"
+        />
+        <script
+          src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js"
+          integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf"
+          crossorigin="anonymous"
+        ></script>
+
+
+        <center>
+          <h1></h1>
+        </center>
+        <style type="text/css">
+
+             #mynetwork {
+                 width: 1280px;
+                 height: 980px;
+                 background-color: #eeeeee;
+                 border: 1px solid lightgray;
+                 position: relative;
+                 float: left;
+             }
+
+             
+             #loadingBar {
+                 position:absolute;
+                 top:0px;
+                 left:0px;
+                 width: 1280px;
+                 height: 980px;
+                 background-color:rgba(200,200,200,0.8);
+                 -webkit-transition: all 0.5s ease;
+                 -moz-transition: all 0.5s ease;
+                 -ms-transition: all 0.5s ease;
+                 -o-transition: all 0.5s ease;
+                 transition: all 0.5s ease;
+                 opacity:1;
+             }
+
+             #bar {
+                 position:absolute;
+                 top:0px;
+                 left:0px;
+                 width:20px;
+                 height:20px;
+                 margin:auto auto auto auto;
+                 border-radius:11px;
+                 border:2px solid rgba(30,30,30,0.05);
+                 background: rgb(0, 173, 246); /* Old browsers */
+                 box-shadow: 2px 0px 4px rgba(0,0,0,0.4);
+             }
+
+             #border {
+                 position:absolute;
+                 top:10px;
+                 left:10px;
+                 width:500px;
+                 height:23px;
+                 margin:auto auto auto auto;
+                 box-shadow: 0px 0px 4px rgba(0,0,0,0.2);
+                 border-radius:10px;
+             }
+
+             #text {
+                 position:absolute;
+                 top:8px;
+                 left:530px;
+                 width:30px;
+                 height:50px;
+                 margin:auto auto auto auto;
+                 font-size:22px;
+                 color: #000000;
+             }
+
+             div.outerBorder {
+                 position:relative;
+                 top:400px;
+                 width:600px;
+                 height:44px;
+                 margin:auto auto auto auto;
+                 border:8px solid rgba(0,0,0,0.1);
+                 background: rgb(252,252,252); /* Old browsers */
+                 background: -moz-linear-gradient(top,  rgba(252,252,252,1) 0%, rgba(237,237,237,1) 100%); /* FF3.6+ */
+                 background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(252,252,252,1)), color-stop(100%,rgba(237,237,237,1))); /* Chrome,Safari4+ */
+                 background: -webkit-linear-gradient(top,  rgba(252,252,252,1) 0%,rgba(237,237,237,1) 100%); /* Chrome10+,Safari5.1+ */
+                 background: -o-linear-gradient(top,  rgba(252,252,252,1) 0%,rgba(237,237,237,1) 100%); /* Opera 11.10+ */
+                 background: -ms-linear-gradient(top,  rgba(252,252,252,1) 0%,rgba(237,237,237,1) 100%); /* IE10+ */
+                 background: linear-gradient(to bottom,  rgba(252,252,252,1) 0%,rgba(237,237,237,1) 100%); /* W3C */
+                 filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#fcfcfc', endColorstr='#ededed',GradientType=0 ); /* IE6-9 */
+                 border-radius:72px;
+                 box-shadow: 0px 0px 10px rgba(0,0,0,0.2);
+             }
+             
+
+             
+
+             
+        </style>
+    </head>
+
+
+    <body>
+        <div class="card" style="width: 100%">
+            
+            
+            <div id="mynetwork" class="card-body"></div>
+        </div>
+
+        
+            <div id="loadingBar">
+              <div class="outerBorder">
+                <div id="text">0%</div>
+                <div id="border">
+                  <div id="bar"></div>
+                </div>
+              </div>
+            </div>
+        
+        
+
+        <script type="text/javascript">
+
+              // initialize global variables.
+              var edges;
+              var nodes;
+              var allNodes;
+              var allEdges;
+              var nodeColors;
+              var originalNodes;
+              var network;
+              var container;
+              var options, data;
+              var filter = {
+                  item : '',
+                  property : '',
+                  value : []
+              };
+
+              
+
+              
+
+              // This method is responsible for drawing the graph, returns the drawn network
+              function drawGraph() {
+                  var container = document.getElementById('mynetwork');
+
+                  
+
+                  // parsing and collecting nodes and edges from the python
+                  nodes = new vis.DataSet([{"color": "#00FF00", "id": "Gujarat", "label": "Gujarat", "shape": "circle"}, {"color": "#00FF00", "id": "Kutch district", "label": "Kutch district", "shape": "circle"}, {"color": "#00FF00", "id": "Greece", "label": "Greece", "shape": "circle"}, {"color": "#00FF00", "id": "Balkans", "label": "Balkans", "shape": "circle"}, {"color": "#00FF00", "id": "Bulgaria", "label": "Bulgaria", "shape": "circle"}, {"color": "#00FF00", "id": "Member state of the European Union", "label": "Member state of the European Union", "shape": "circle"}, {"color": "#00FF00", "id": "Lumpy skin disease", "label": "Lumpy skin disease", "shape": "circle"}, {"color": "#00FF00", "id": "Udder", "label": "Udder", "shape": "circle"}, {"color": "#00FF00", "id": "Perineum", "label": "Perineum", "shape": "circle"}, {"color": "#00FF00", "id": "Cattle", "label": "Cattle", "shape": "circle"}, {"color": "#00FF00", "id": "Ananya Panday", "label": "Ananya Panday", "shape": "circle"}, {"color": "#00FF00", "id": "Hindi cinema", "label": "Hindi cinema", "shape": "circle"}, {"color": "#00FF00", "id": "Sonam Kapoor", "label": "Sonam Kapoor", "shape": "circle"}, {"color": "#00FF00", "id": "Guruvayur", "label": "Guruvayur", "shape": "circle"}, {"color": "#00FF00", "id": "Thrissur", "label": "Thrissur", "shape": "circle"}, {"color": "#00FF00", "id": "Guru", "label": "Guru", "shape": "circle"}, {"color": "#00FF00", "id": "Vayu", "label": "Vayu", "shape": "circle"}, {"color": "#00FF00", "id": "Krishna", "label": "Krishna", "shape": "circle"}, {"color": "#00FF00", "id": "Kerala", "label": "Kerala", "shape": "circle"}, {"color": "#00FF00", "id": "Mammiyoor Temple", "label": "Mammiyoor Temple", "shape": "circle"}, {"color": "#00FF00", "id": "Brihaspati", "label": "Brihaspati", "shape": "circle"}, {"color": "#00FF00", "id": "Thrissur railway station", "label": "Thrissur railway station", "shape": "circle"}, {"color": "#00FF00", "id": "Guruvayur railway station", "label": "Guruvayur railway station", "shape": "circle"}, {"color": "#00FF00", "id": "Cochin International Airport", "label": "Cochin International Airport", "shape": "circle"}, {"color": "#00FF00", "id": "Airport", "label": "Airport", "shape": "circle"}, {"color": "#00FF00", "id": "Kozhikode International Airport", "label": "Kozhikode International Airport", "shape": "circle"}, {"color": "#00FF00", "id": "Colorectal cancer", "label": "Colorectal cancer", "shape": "circle"}, {"color": "#00FF00", "id": "Cancer", "label": "Cancer", "shape": "circle"}, {"color": "#00FF00", "id": "Signs and symptoms", "label": "Signs and symptoms", "shape": "circle"}, {"color": "#00FF00", "id": "Colonoscopy", "label": "Colonoscopy", "shape": "circle"}, {"color": "#00FF00", "id": "Rectum", "label": "Rectum", "shape": "circle"}, {"color": "#00FF00", "id": "CT scan", "label": "CT scan", "shape": "circle"}, {"color": "#00FF00", "id": "X-ray", "label": "X-ray", "shape": "circle"}, {"color": "#00FF00", "id": "Chest radiograph", "label": "Chest radiograph", "shape": "circle"}, {"color": "#00FF00", "id": "Positron emission tomography", "label": "Positron emission tomography", "shape": "circle"}, {"color": "#00FF00", "id": "Large intestine", "label": "Large intestine", "shape": "circle"}, {"color": "#00FF00", "id": "Murphy bed", "label": "Murphy bed", "shape": "circle"}, {"color": "#00FF00", "id": "Woodworking", "label": "Woodworking", "shape": "circle"}, {"color": "#00FF00", "id": "Navaratri", "label": "Navaratri", "shape": "circle"}, {"color": "#00FF00", "id": "Hinduism", "label": "Hinduism", "shape": "circle"}, {"color": "#00FF00", "id": "Hypertension", "label": "Hypertension", "shape": "circle"}, {"color": "#00FF00", "id": "Blood pressure", "label": "Blood pressure", "shape": "circle"}, {"color": "#00FF00", "id": "Jaggery", "label": "Jaggery", "shape": "circle"}, {"color": "#00FF00", "id": "White sugar", "label": "White sugar", "shape": "circle"}, {"color": "#00FF00", "id": "Sugar", "label": "Sugar", "shape": "circle"}, {"color": "#00FF00", "id": "Honey", "label": "Honey", "shape": "circle"}, {"color": "#00FF00", "id": "Intermittent fasting", "label": "Intermittent fasting", "shape": "circle"}, {"color": "#00FF00", "id": "Fasting", "label": "Fasting", "shape": "circle"}, {"color": "#00FF00", "id": "Milk", "label": "Milk", "shape": "circle"}, {"color": "#00FF00", "id": "Fruit", "label": "Fruit", "shape": "circle"}, {"color": "#00FF00", "id": "Madhuri Dixit", "label": "Madhuri Dixit", "shape": "circle"}, {"color": "#00FF00", "id": "Shraddha Kapoor", "label": "Shraddha Kapoor", "shape": "circle"}, {"color": "#00FF00", "id": "Vidya Balan", "label": "Vidya Balan", "shape": "circle"}, {"color": "#00FF00", "id": "Shilpa Shetty", "label": "Shilpa Shetty", "shape": "circle"}, {"color": "#00FF00", "id": "Karisma Kapoor", "label": "Karisma Kapoor", "shape": "circle"}, {"color": "#00FF00", "id": "Protein", "label": "Protein", "shape": "circle"}, {"color": "#00FF00", "id": "Amino acid", "label": "Amino acid", "shape": "circle"}, {"color": "#00FF00", "id": "A", "label": "A", "shape": "circle"}, {"color": "#00FF00", "id": "Vitamin", "label": "Vitamin", "shape": "circle"}, {"color": "#00FF00", "id": "E", "label": "E", "shape": "circle"}, {"color": "#00FF00", "id": "Biotin", "label": "Biotin", "shape": "circle"}, {"color": "#00FF00", "id": "Folate", "label": "Folate", "shape": "circle"}, {"color": "#00FF00", "id": "Daksha", "label": "Daksha", "shape": "circle"}, {"color": "#00FF00", "id": "Shiva", "label": "Shiva", "shape": "circle"}, {"color": "#00FF00", "id": "Vishnu", "label": "Vishnu", "shape": "circle"}, {"color": "#00FF00", "id": "Karachi", "label": "Karachi", "shape": "circle"}, {"color": "#00FF00", "id": "Pakistan", "label": "Pakistan", "shape": "circle"}, {"color": "#00FF00", "id": "Balochistan", "label": "Balochistan", "shape": "circle"}, {"color": "#00FF00", "id": "Himachal Pradesh", "label": "Himachal Pradesh", "shape": "circle"}, {"color": "#00FF00", "id": "India", "label": "India", "shape": "circle"}, {"color": "#00FF00", "id": "Jawalamukhi", "label": "Jawalamukhi", "shape": "circle"}, {"color": "#00FF00", "id": "Jalandhar", "label": "Jalandhar", "shape": "circle"}, {"color": "#00FF00", "id": "Punjab", "label": "Punjab", "shape": "circle"}, {"color": "#00FF00", "id": "Kathmandu", "label": "Kathmandu", "shape": "circle"}, {"color": "#00FF00", "id": "Nepal", "label": "Nepal", "shape": "circle"}, {"color": "#00FF00", "id": "Guhyeshwari Temple", "label": "Guhyeshwari Temple", "shape": "circle"}, {"color": "#00FF00", "id": "Pashupatinath Temple", "label": "Pashupatinath Temple", "shape": "circle"}, {"color": "#00FF00", "id": "Lake Manasarovar", "label": "Lake Manasarovar", "shape": "circle"}, {"color": "#00FF00", "id": "Tibet", "label": "Tibet", "shape": "circle"}, {"color": "#00FF00", "id": "Utkala kingdom", "label": "Utkala kingdom", "shape": "circle"}, {"color": "#00FF00", "id": "Odisha", "label": "Odisha", "shape": "circle"}, {"color": "#00FF00", "id": "Bardhaman district", "label": "Bardhaman district", "shape": "circle"}, {"color": "#00FF00", "id": "West Bengal", "label": "West Bengal", "shape": "circle"}, {"color": "#00FF00", "id": "Bardhaman", "label": "Bardhaman", "shape": "circle"}, {"color": "#00FF00", "id": "Tripura", "label": "Tripura", "shape": "circle"}, {"color": "#00FF00", "id": "Chitral", "label": "Chitral", "shape": "circle"}, {"color": "#00FF00", "id": "Chittagong", "label": "Chittagong", "shape": "circle"}, {"color": "#00FF00", "id": "Bangladesh", "label": "Bangladesh", "shape": "circle"}, {"color": "#00FF00", "id": "Guwahati", "label": "Guwahati", "shape": "circle"}, {"color": "#00FF00", "id": "Assam", "label": "Assam", "shape": "circle"}, {"color": "#00FF00", "id": "Sylhet District", "label": "Sylhet District", "shape": "circle"}, {"color": "#00FF00", "id": "Kanyakumari", "label": "Kanyakumari", "shape": "circle"}, {"color": "#00FF00", "id": "Tamil Nadu", "label": "Tamil Nadu", "shape": "circle"}, {"color": "#00FF00", "id": "Narmada River", "label": "Narmada River", "shape": "circle"}, {"color": "#00FF00", "id": "Madhya Pradesh", "label": "Madhya Pradesh", "shape": "circle"}, {"color": "#00FF00", "id": "Amarkantak", "label": "Amarkantak", "shape": "circle"}, {"color": "#00FF00", "id": "Uttarakhand", "label": "Uttarakhand", "shape": "circle"}, {"color": "#00FF00", "id": "Thiruvananthapuram", "label": "Thiruvananthapuram", "shape": "circle"}, {"color": "#00FF00", "id": "Srisailam", "label": "Srisailam", "shape": "circle"}, {"color": "#00FF00", "id": "Andhra Pradesh", "label": "Andhra Pradesh", "shape": "circle"}, {"color": "#00FF00", "id": "Purba Medinipur district", "label": "Purba Medinipur district", "shape": "circle"}, {"color": "#00FF00", "id": "Midnapore", "label": "Midnapore", "shape": "circle"}, {"color": "#00FF00", "id": "Junagadh", "label": "Junagadh", "shape": "circle"}, {"color": "#00FF00", "id": "Junagadh district", "label": "Junagadh district", "shape": "circle"}, {"color": "#00FF00", "id": "Somnath temple", "label": "Somnath temple", "shape": "circle"}, {"color": "#00FF00", "id": "Nashik", "label": "Nashik", "shape": "circle"}, {"color": "#00FF00", "id": "Maharashtra", "label": "Maharashtra", "shape": "circle"}, {"color": "#00FF00", "id": "Godavari River", "label": "Godavari River", "shape": "circle"}, {"color": "#00FF00", "id": "Ratnavali", "label": "Ratnavali", "shape": "circle"}, {"color": "#00FF00", "id": "Hooghly district", "label": "Hooghly district", "shape": "circle"}, {"color": "#00FF00", "id": "Nalhati", "label": "Nalhati", "shape": "circle"}, {"color": "#00FF00", "id": "Birbhum district", "label": "Birbhum district", "shape": "circle"}, {"color": "#00FF00", "id": "Khulna", "label": "Khulna", "shape": "circle"}, {"color": "#00FF00", "id": "Ishwaripur", "label": "Ishwaripur", "shape": "circle"}, {"color": "#00FF00", "id": "Nandipur", "label": "Nandipur", "shape": "circle"}, {"color": "#00FF00", "id": "Sainthia Junction railway station", "label": "Sainthia Junction railway station", "shape": "circle"}, {"color": "#00FF00", "id": "Labhpur", "label": "Labhpur", "shape": "circle"}, {"color": "#00FF00", "id": "Trincomalee", "label": "Trincomalee", "shape": "circle"}, {"color": "#00FF00", "id": "Sri Lanka", "label": "Sri Lanka", "shape": "circle"}, {"color": "#00FF00", "id": "Horoscope", "label": "Horoscope", "shape": "circle"}, {"color": "#00FF00", "id": "Day", "label": "Day", "shape": "circle"}, {"color": "#00FF00", "id": "Mother goddess", "label": "Mother goddess", "shape": "circle"}, {"color": "#00FF00", "id": "Litter (vehicle)", "label": "Litter (vehicle)", "shape": "circle"}, {"color": "#00FF00", "id": "Elephant", "label": "Elephant", "shape": "circle"}, {"color": "#00FF00", "id": "Alia Bhatt", "label": "Alia Bhatt", "shape": "circle"}, {"color": "#00FF00", "id": "Durga Puja", "label": "Durga Puja", "shape": "circle"}, {"color": "#00FF00", "id": "Vijayadashami", "label": "Vijayadashami", "shape": "circle"}, {"color": "#00FF00", "id": "Shashthi (day)", "label": "Shashthi (day)", "shape": "circle"}, {"color": "#00FF00", "id": "Tithi", "label": "Tithi", "shape": "circle"}, {"color": "#00FF00", "id": "Rama", "label": "Rama", "shape": "circle"}, {"color": "#00FF00", "id": "Ravana", "label": "Ravana", "shape": "circle"}, {"color": "#00FF00", "id": "Chaitra", "label": "Chaitra", "shape": "circle"}, {"color": "#00FF00", "id": "Mahishasura", "label": "Mahishasura", "shape": "circle"}, {"color": "#00FF00", "id": "Demon", "label": "Demon", "shape": "circle"}, {"color": "#00FF00", "id": "Brahma", "label": "Brahma", "shape": "circle"}, {"color": "#00FF00", "id": "Durga", "label": "Durga", "shape": "circle"}, {"color": "#00FF00", "id": "Sattva", "label": "Sattva", "shape": "circle"}, {"color": "#00FF00", "id": "Goddess", "label": "Goddess", "shape": "circle"}, {"color": "#00FF00", "id": "Ponniyin Selvan", "label": "Ponniyin Selvan", "shape": "circle"}, {"color": "#00FF00", "id": "Trisha Krishnan", "label": "Trisha Krishnan", "shape": "circle"}, {"color": "#00FF00", "id": "Mani Ratnam", "label": "Mani Ratnam", "shape": "circle"}, {"color": "#00FF00", "id": "Kalki Krishnamurthy", "label": "Kalki Krishnamurthy", "shape": "circle"}, {"color": "#00FF00", "id": "Priyanka Chopra", "label": "Priyanka Chopra", "shape": "circle"}, {"color": "#00FF00", "id": "Nick Jonas", "label": "Nick Jonas", "shape": "circle"}]);
+                  edges = new vis.DataSet([{"arrows": "to", "from": "Gujarat", "label": "contains administrative territorial entity", "title": "contains administrative territorial entity", "to": "Kutch district"}, {"arrows": "to", "from": "Kutch district", "label": "located in the administrative territorial entity", "title": "located in the administrative territorial entity", "to": "Gujarat"}, {"arrows": "to", "from": "Greece", "label": "part of", "title": "part of", "to": "Balkans"}, {"arrows": "to", "from": "Bulgaria", "label": "part of", "title": "part of", "to": "Balkans"}, {"arrows": "to", "from": "Member state of the European Union", "label": "has part", "title": "has part", "to": "Greece"}, {"arrows": "to", "from": "Member state of the European Union", "label": "has part", "title": "has part", "to": "Bulgaria"}, {"arrows": "to", "from": "Greece", "label": "member of", "title": "member of", "to": "Member state of the European Union"}, {"arrows": "to", "from": "Bulgaria", "label": "member of", "title": "member of", "to": "Member state of the European Union"}, {"arrows": "to", "from": "Member state of the European Union", "label": "contains administrative territorial entity", "title": "contains administrative territorial entity", "to": "Greece"}, {"arrows": "to", "from": "Member state of the European Union", "label": "contains administrative territorial entity", "title": "contains administrative territorial entity", "to": "Bulgaria"}, {"arrows": "to", "from": "Lumpy skin disease", "label": "has effect", "title": "has effect", "to": "Lumpy skin disease"}, {"arrows": "to", "from": "Lumpy skin disease", "label": "has cause", "title": "has cause", "to": "Lumpy skin disease"}, {"arrows": "to", "from": "Udder", "label": "connects with", "title": "connects with", "to": "Perineum"}, {"arrows": "to", "from": "Perineum", "label": "connects with", "title": "connects with", "to": "Udder"}, {"arrows": "to", "from": "Udder", "label": "part of", "title": "part of", "to": "Cattle"}, {"arrows": "to", "from": "Perineum", "label": "part of", "title": "part of", "to": "Cattle"}, {"arrows": "to", "from": "Ananya Panday", "label": "field of work", "title": "field of work", "to": "Hindi cinema"}, {"arrows": "to", "from": "Sonam Kapoor", "label": "field of work", "title": "field of work", "to": "Hindi cinema"}, {"arrows": "to", "from": "Ananya Panday", "label": "genre", "title": "genre", "to": "Hindi cinema"}, {"arrows": "to", "from": "Sonam Kapoor", "label": "genre", "title": "genre", "to": "Hindi cinema"}, {"arrows": "to", "from": "Guruvayur", "label": "located in the administrative territorial entity", "title": "located in the administrative territorial entity", "to": "Thrissur"}, {"arrows": "to", "from": "Guruvayur", "label": "named after", "title": "named after", "to": "Guru"}, {"arrows": "to", "from": "Guru", "label": "spouse", "title": "spouse", "to": "Vayu"}, {"arrows": "to", "from": "Vayu", "label": "spouse", "title": "spouse", "to": "Guru"}, {"arrows": "to", "from": "Krishna", "label": "father", "title": "father", "to": "Guru"}, {"arrows": "to", "from": "Krishna", "label": "mother", "title": "mother", "to": "Vayu"}, {"arrows": "to", "from": "Guruvayur", "label": "located in the administrative territorial entity", "title": "located in the administrative territorial entity", "to": "Kerala"}, {"arrows": "to", "from": "Mammiyoor Temple", "label": "located in the administrative territorial entity", "title": "located in the administrative territorial entity", "to": "Kerala"}, {"arrows": "to", "from": "Brihaspati", "label": "spouse", "title": "spouse", "to": "Vayu"}, {"arrows": "to", "from": "Vayu", "label": "spouse", "title": "spouse", "to": "Brihaspati"}, {"arrows": "to", "from": "Guru", "label": "sibling", "title": "sibling", "to": "Vayu"}, {"arrows": "to", "from": "Vayu", "label": "sibling", "title": "sibling", "to": "Guru"}, {"arrows": "to", "from": "Vayu", "label": "sibling", "title": "sibling", "to": "Vayu"}, {"arrows": "to", "from": "Thrissur railway station", "label": "located in the administrative territorial entity", "title": "located in the administrative territorial entity", "to": "Thrissur"}, {"arrows": "to", "from": "Guruvayur railway station", "label": "located in the administrative territorial entity", "title": "located in the administrative territorial entity", "to": "Thrissur"}, {"arrows": "to", "from": "Cochin International Airport", "label": "instance of", "title": "instance of", "to": "Airport"}, {"arrows": "to", "from": "Kozhikode International Airport", "label": "instance of", "title": "instance of", "to": "Airport"}, {"arrows": "to", "from": "Colorectal cancer", "label": "subclass of", "title": "subclass of", "to": "Cancer"}, {"arrows": "to", "from": "Signs and symptoms", "label": "subclass of", "title": "subclass of", "to": "Signs and symptoms"}, {"arrows": "to", "from": "Colonoscopy", "label": "uses", "title": "uses", "to": "Rectum"}, {"arrows": "to", "from": "Rectum", "label": "use", "title": "use", "to": "Colonoscopy"}, {"arrows": "to", "from": "CT scan", "label": "uses", "title": "uses", "to": "X-ray"}, {"arrows": "to", "from": "CT scan", "label": "subclass of", "title": "subclass of", "to": "CT scan"}, {"arrows": "to", "from": "CT scan", "label": "uses", "title": "uses", "to": "CT scan"}, {"arrows": "to", "from": "Chest radiograph", "label": "subclass of", "title": "subclass of", "to": "X-ray"}, {"arrows": "to", "from": "Positron emission tomography", "label": "subclass of", "title": "subclass of", "to": "X-ray"}, {"arrows": "to", "from": "Large intestine", "label": "has part", "title": "has part", "to": "Rectum"}, {"arrows": "to", "from": "Rectum", "label": "part of", "title": "part of", "to": "Large intestine"}, {"arrows": "to", "from": "Colorectal cancer", "label": "has effect", "title": "has effect", "to": "Rectum"}, {"arrows": "to", "from": "Rectum", "label": "part of", "title": "part of", "to": "Colorectal cancer"}, {"arrows": "to", "from": "Colorectal cancer", "label": "has cause", "title": "has cause", "to": "Rectum"}, {"arrows": "to", "from": "Rectum", "label": "has effect", "title": "has effect", "to": "Colorectal cancer"}, {"arrows": "to", "from": "Murphy bed", "label": "subclass of", "title": "subclass of", "to": "Woodworking"}, {"arrows": "to", "from": "Navaratri", "label": "religion", "title": "religion", "to": "Hinduism"}, {"arrows": "to", "from": "Hypertension", "label": "has cause", "title": "has cause", "to": "Blood pressure"}, {"arrows": "to", "from": "Hypertension", "label": "has effect", "title": "has effect", "to": "Blood pressure"}, {"arrows": "to", "from": "Hypertension", "label": "subclass of", "title": "subclass of", "to": "Blood pressure"}, {"arrows": "to", "from": "Jaggery", "label": "subclass of", "title": "subclass of", "to": "White sugar"}, {"arrows": "to", "from": "Jaggery", "label": "instance of", "title": "instance of", "to": "White sugar"}, {"arrows": "to", "from": "Jaggery", "label": "has part", "title": "has part", "to": "Sugar"}, {"arrows": "to", "from": "Jaggery", "label": "subclass of", "title": "subclass of", "to": "Honey"}, {"arrows": "to", "from": "Intermittent fasting", "label": "subclass of", "title": "subclass of", "to": "Fasting"}, {"arrows": "to", "from": "Milk", "label": "subclass of", "title": "subclass of", "to": "Fruit"}, {"arrows": "to", "from": "Madhuri Dixit", "label": "field of work", "title": "field of work", "to": "Hindi cinema"}, {"arrows": "to", "from": "Shraddha Kapoor", "label": "field of work", "title": "field of work", "to": "Hindi cinema"}, {"arrows": "to", "from": "Vidya Balan", "label": "field of work", "title": "field of work", "to": "Hindi cinema"}, {"arrows": "to", "from": "Shilpa Shetty", "label": "field of work", "title": "field of work", "to": "Hindi cinema"}, {"arrows": "to", "from": "Karisma Kapoor", "label": "field of work", "title": "field of work", "to": "Hindi cinema"}, {"arrows": "to", "from": "Protein", "label": "has part", "title": "has part", "to": "Amino acid"}, {"arrows": "to", "from": "A", "label": "instance of", "title": "instance of", "to": "Vitamin"}, {"arrows": "to", "from": "E", "label": "instance of", "title": "instance of", "to": "Vitamin"}, {"arrows": "to", "from": "Biotin", "label": "instance of", "title": "instance of", "to": "Vitamin"}, {"arrows": "to", "from": "Folate", "label": "instance of", "title": "instance of", "to": "Vitamin"}, {"arrows": "to", "from": "A", "label": "subject has role", "title": "subject has role", "to": "Vitamin"}, {"arrows": "to", "from": "E", "label": "subject has role", "title": "subject has role", "to": "Vitamin"}, {"arrows": "to", "from": "Biotin", "label": "subject has role", "title": "subject has role", "to": "Vitamin"}, {"arrows": "to", "from": "Folate", "label": "subject has role", "title": "subject has role", "to": "Vitamin"}, {"arrows": "to", "from": "Daksha", "label": "child", "title": "child", "to": "Shiva"}, {"arrows": "to", "from": "Shiva", "label": "father", "title": "father", "to": "Daksha"}, {"arrows": "to", "from": "Shiva", "label": "sibling", "title": "sibling", "to": "Vishnu"}, {"arrows": "to", "from": "Vishnu", "label": "sibling", "title": "sibling", "to": "Shiva"}, {"arrows": "to", "from": "Karachi", "label": "country", "title": "country", "to": "Pakistan"}, {"arrows": "to", "from": "Pakistan", "label": "contains administrative territorial entity", "title": "contains administrative territorial entity", "to": "Balochistan"}, {"arrows": "to", "from": "Balochistan", "label": "country", "title": "country", "to": "Pakistan"}, {"arrows": "to", "from": "Himachal Pradesh", "label": "country", "title": "country", "to": "India"}, {"arrows": "to", "from": "India", "label": "contains administrative territorial entity", "title": "contains administrative territorial entity", "to": "Himachal Pradesh"}, {"arrows": "to", "from": "Jawalamukhi", "label": "country", "title": "country", "to": "India"}, {"arrows": "to", "from": "Jalandhar", "label": "country", "title": "country", "to": "India"}, {"arrows": "to", "from": "Punjab", "label": "country", "title": "country", "to": "India"}, {"arrows": "to", "from": "India", "label": "contains administrative territorial entity", "title": "contains administrative territorial entity", "to": "Punjab"}, {"arrows": "to", "from": "Kathmandu", "label": "country", "title": "country", "to": "Nepal"}, {"arrows": "to", "from": "Guhyeshwari Temple", "label": "located in the administrative territorial entity", "title": "located in the administrative territorial entity", "to": "Kathmandu"}, {"arrows": "to", "from": "Guhyeshwari Temple", "label": "country", "title": "country", "to": "Nepal"}, {"arrows": "to", "from": "Pashupatinath Temple", "label": "located in the administrative territorial entity", "title": "located in the administrative territorial entity", "to": "Kathmandu"}, {"arrows": "to", "from": "Pashupatinath Temple", "label": "country", "title": "country", "to": "Nepal"}, {"arrows": "to", "from": "Lake Manasarovar", "label": "country", "title": "country", "to": "Tibet"}, {"arrows": "to", "from": "Utkala kingdom", "label": "located in the administrative territorial entity", "title": "located in the administrative territorial entity", "to": "Odisha"}, {"arrows": "to", "from": "Bardhaman district", "label": "located in the administrative territorial entity", "title": "located in the administrative territorial entity", "to": "Odisha"}, {"arrows": "to", "from": "West Bengal", "label": "shares border with", "title": "shares border with", "to": "Odisha"}, {"arrows": "to", "from": "Odisha", "label": "shares border with", "title": "shares border with", "to": "West Bengal"}, {"arrows": "to", "from": "Bardhaman", "label": "country", "title": "country", "to": "India"}, {"arrows": "to", "from": "West Bengal", "label": "country", "title": "country", "to": "India"}, {"arrows": "to", "from": "Tripura", "label": "country", "title": "country", "to": "India"}, {"arrows": "to", "from": "India", "label": "contains administrative territorial entity", "title": "contains administrative territorial entity", "to": "West Bengal"}, {"arrows": "to", "from": "India", "label": "contains administrative territorial entity", "title": "contains administrative territorial entity", "to": "Tripura"}, {"arrows": "to", "from": "Chitral", "label": "located in the administrative territorial entity", "title": "located in the administrative territorial entity", "to": "Chittagong"}, {"arrows": "to", "from": "Chitral", "label": "country", "title": "country", "to": "Bangladesh"}, {"arrows": "to", "from": "Chittagong", "label": "country", "title": "country", "to": "Bangladesh"}, {"arrows": "to", "from": "Guwahati", "label": "capital of", "title": "capital of", "to": "Assam"}, {"arrows": "to", "from": "Assam", "label": "capital", "title": "capital", "to": "Guwahati"}, {"arrows": "to", "from": "Sylhet District", "label": "country", "title": "country", "to": "Bangladesh"}, {"arrows": "to", "from": "Kanyakumari", "label": "located in the administrative territorial entity", "title": "located in the administrative territorial entity", "to": "Tamil Nadu"}, {"arrows": "to", "from": "Kanyakumari", "label": "located in the administrative territorial entity", "title": "located in the administrative territorial entity", "to": "Kanyakumari"}, {"arrows": "to", "from": "Narmada River", "label": "located in the administrative territorial entity", "title": "located in the administrative territorial entity", "to": "Madhya Pradesh"}, {"arrows": "to", "from": "Amarkantak", "label": "located in the administrative territorial entity", "title": "located in the administrative territorial entity", "to": "Madhya Pradesh"}, {"arrows": "to", "from": "Tamil Nadu", "label": "contains administrative territorial entity", "title": "contains administrative territorial entity", "to": "Kanyakumari"}, {"arrows": "to", "from": "Tamil Nadu", "label": "shares border with", "title": "shares border with", "to": "Uttarakhand"}, {"arrows": "to", "from": "Thiruvananthapuram", "label": "located in the administrative territorial entity", "title": "located in the administrative territorial entity", "to": "Tamil Nadu"}, {"arrows": "to", "from": "Srisailam", "label": "located in the administrative territorial entity", "title": "located in the administrative territorial entity", "to": "Andhra Pradesh"}, {"arrows": "to", "from": "Andhra Pradesh", "label": "contains administrative territorial entity", "title": "contains administrative territorial entity", "to": "Srisailam"}, {"arrows": "to", "from": "Purba Medinipur district", "label": "located in the administrative territorial entity", "title": "located in the administrative territorial entity", "to": "Midnapore"}, {"arrows": "to", "from": "Purba Medinipur district", "label": "capital", "title": "capital", "to": "Midnapore"}, {"arrows": "to", "from": "Junagadh", "label": "located in the administrative territorial entity", "title": "located in the administrative territorial entity", "to": "Gujarat"}, {"arrows": "to", "from": "Junagadh", "label": "located in the administrative territorial entity", "title": "located in the administrative territorial entity", "to": "Junagadh district"}, {"arrows": "to", "from": "Gujarat", "label": "contains administrative territorial entity", "title": "contains administrative territorial entity", "to": "Junagadh"}, {"arrows": "to", "from": "Gujarat", "label": "contains administrative territorial entity", "title": "contains administrative territorial entity", "to": "Junagadh district"}, {"arrows": "to", "from": "Somnath temple", "label": "located in the administrative territorial entity", "title": "located in the administrative territorial entity", "to": "Junagadh"}, {"arrows": "to", "from": "Somnath temple", "label": "located in the administrative territorial entity", "title": "located in the administrative territorial entity", "to": "Junagadh district"}, {"arrows": "to", "from": "Junagadh district", "label": "located in the administrative territorial entity", "title": "located in the administrative territorial entity", "to": "Gujarat"}, {"arrows": "to", "from": "Gujarat", "label": "contains administrative", "title": "contains administrative", "to": "Junagadh district"}, {"arrows": "to", "from": "Nashik", "label": "located in the administrative territorial entity", "title": "located in the administrative territorial entity", "to": "Maharashtra"}, {"arrows": "to", "from": "Nashik", "label": "located in or next to body of water", "title": "located in or next to body of water", "to": "Godavari River"}, {"arrows": "to", "from": "Godavari River", "label": "located in the administrative territorial entity", "title": "located in the administrative territorial entity", "to": "Maharashtra"}, {"arrows": "to", "from": "Maharashtra", "label": "capital", "title": "capital", "to": "Nashik"}, {"arrows": "to", "from": "Maharashtra", "label": "located in the administrative territorial entity", "title": "located in the administrative territorial entity", "to": "Maharashtra"}, {"arrows": "to", "from": "Godavari River", "label": "located in the administrative territorial entity", "title": "located in the administrative territorial entity", "to": "Andhra Pradesh"}, {"arrows": "to", "from": "Ratnavali", "label": "located in the administrative territorial entity", "title": "located in the administrative territorial entity", "to": "Hooghly district"}, {"arrows": "to", "from": "Nalhati", "label": "located in the administrative territorial entity", "title": "located in the administrative territorial entity", "to": "Birbhum district"}, {"arrows": "to", "from": "Khulna", "label": "country", "title": "country", "to": "Bangladesh"}, {"arrows": "to", "from": "Ishwaripur", "label": "country", "title": "country", "to": "Bangladesh"}, {"arrows": "to", "from": "Nandipur", "label": "connecting line", "title": "connecting line", "to": "Sainthia Junction railway station"}, {"arrows": "to", "from": "Labhpur", "label": "located in the administrative territorial entity", "title": "located in the administrative territorial entity", "to": "West Bengal"}, {"arrows": "to", "from": "Trincomalee", "label": "country", "title": "country", "to": "Sri Lanka"}, {"arrows": "to", "from": "Horoscope", "label": "has part", "title": "has part", "to": "Day"}, {"arrows": "to", "from": "Day", "label": "part of", "title": "part of", "to": "Horoscope"}, {"arrows": "to", "from": "Mother goddess", "label": "owner of", "title": "owner of", "to": "Litter (vehicle)"}, {"arrows": "to", "from": "Mother goddess", "label": "owner of", "title": "owner of", "to": "Elephant"}, {"arrows": "to", "from": "Litter (vehicle)", "label": "owned by", "title": "owned by", "to": "Mother goddess"}, {"arrows": "to", "from": "Elephant", "label": "owned by", "title": "owned by", "to": "Mother goddess"}, {"arrows": "to", "from": "Alia Bhatt", "label": "field of work", "title": "field of work", "to": "Hindi cinema"}, {"arrows": "to", "from": "Alia Bhatt", "label": "genre", "title": "genre", "to": "Hindi cinema"}, {"arrows": "to", "from": "Durga Puja", "label": "followed by", "title": "followed by", "to": "Vijayadashami"}, {"arrows": "to", "from": "Vijayadashami", "label": "follows", "title": "follows", "to": "Durga Puja"}, {"arrows": "to", "from": "Shashthi (day)", "label": "instance of", "title": "instance of", "to": "Tithi"}, {"arrows": "to", "from": "Rama", "label": "sibling", "title": "sibling", "to": "Ravana"}, {"arrows": "to", "from": "Ravana", "label": "sibling", "title": "sibling", "to": "Rama"}, {"arrows": "to", "from": "Chaitra", "label": "instance of", "title": "instance of", "to": "Navaratri"}, {"arrows": "to", "from": "Navaratri", "label": "instance of", "title": "instance of", "to": "Navaratri"}, {"arrows": "to", "from": "Mahishasura", "label": "instance of", "title": "instance of", "to": "Demon"}, {"arrows": "to", "from": "Brahma", "label": "spouse", "title": "spouse", "to": "Durga"}, {"arrows": "to", "from": "Durga", "label": "instance of", "title": "instance of", "to": "Sattva"}, {"arrows": "to", "from": "Durga", "label": "instance of", "title": "instance of", "to": "Goddess"}, {"arrows": "to", "from": "Ponniyin Selvan", "label": "cast member", "title": "cast member", "to": "Trisha Krishnan"}, {"arrows": "to", "from": "Ponniyin Selvan", "label": "director", "title": "director", "to": "Mani Ratnam"}, {"arrows": "to", "from": "Ponniyin Selvan", "label": "screenwriter", "title": "screenwriter", "to": "Kalki Krishnamurthy"}, {"arrows": "to", "from": "Priyanka Chopra", "label": "spouse", "title": "spouse", "to": "Nick Jonas"}, {"arrows": "to", "from": "Nick Jonas", "label": "spouse", "title": "spouse", "to": "Priyanka Chopra"}]);
+
+                  nodeColors = {};
+                  allNodes = nodes.get({ returnType: "Object" });
+                  for (nodeId in allNodes) {
+                    nodeColors[nodeId] = allNodes[nodeId].color;
+                  }
+                  allEdges = edges.get({ returnType: "Object" });
+                  // adding nodes and edges to the graph
+                  data = {nodes: nodes, edges: edges};
+
+                  var options = {
+    "configure": {
+        "enabled": false
+    },
+    "edges": {
+        "color": {
+            "inherit": true
+        },
+        "smooth": {
+            "enabled": true,
+            "type": "dynamic"
+        }
+    },
+    "interaction": {
+        "dragNodes": true,
+        "hideEdgesOnDrag": false,
+        "hideNodesOnDrag": false
+    },
+    "physics": {
+        "enabled": true,
+        "repulsion": {
+            "centralGravity": 0.2,
+            "damping": 0.09,
+            "nodeDistance": 200,
+            "springConstant": 0.05,
+            "springLength": 200
+        },
+        "solver": "repulsion",
+        "stabilization": {
+            "enabled": true,
+            "fit": true,
+            "iterations": 1000,
+            "onlyDynamicEdges": false,
+            "updateInterval": 50
+        }
+    }
+};
+
+                  
+
+
+                  
+
+                  network = new vis.Network(container, data, options);
+
+                  
+
+                  
+
+                  
+
+
+                  
+                      network.on("stabilizationProgress", function(params) {
+                          document.getElementById('loadingBar').removeAttribute("style");
+                          var maxWidth = 496;
+                          var minWidth = 20;
+                          var widthFactor = params.iterations/params.total;
+                          var width = Math.max(minWidth,maxWidth * widthFactor);
+                          document.getElementById('bar').style.width = width + 'px';
+                          document.getElementById('text').innerHTML = Math.round(widthFactor*100) + '%';
+                      });
+                      network.once("stabilizationIterationsDone", function() {
+                          document.getElementById('text').innerHTML = '100%';
+                          document.getElementById('bar').style.width = '496px';
+                          document.getElementById('loadingBar').style.opacity = 0;
+                          // really clean the dom element
+                          setTimeout(function () {document.getElementById('loadingBar').style.display = 'none';}, 500);
+                      });
+                  
+
+                  return network;
+
+              }
+              drawGraph();
+        </script>
+    </body>
+</html>

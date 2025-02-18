@@ -1,0 +1,164 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        
+            <script src="lib/bindings/utils.js"></script>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/dist/vis-network.min.css" integrity="sha512-WgxfT5LWjfszlPHXRmBWHkV2eceiWTOBvrKCNbdgDYTHrT2AeLCGbF4sZlZw3UMN3WtL0tGUoIAKsu8mllg/XA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/vis-network.min.js" integrity="sha512-LnvoEWDFrqGHlHmDD2101OrLcbsfkrzoSpvtSQtxK3RMnRV0eOkhhBN2dXHKRrUU8p2DGRTk35n4O8nWSVe1mQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+            
+        
+<center>
+<h1></h1>
+</center>
+
+<!-- <link rel="stylesheet" href="../node_modules/vis/dist/vis.min.css" type="text/css" />
+<script type="text/javascript" src="../node_modules/vis/dist/vis.js"> </script>-->
+        <link
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css"
+          rel="stylesheet"
+          integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6"
+          crossorigin="anonymous"
+        />
+        <script
+          src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js"
+          integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf"
+          crossorigin="anonymous"
+        ></script>
+
+
+        <center>
+          <h1></h1>
+        </center>
+        <style type="text/css">
+
+             #mynetwork {
+                 width: 1400px;
+                 height: 980px;
+                 background-color: #f7f7f7;
+                 border: 1px solid lightgray;
+                 position: relative;
+                 float: left;
+             }
+
+             
+
+             
+
+             
+        </style>
+    </head>
+
+
+    <body>
+        <div class="card" style="width: 100%">
+            
+            
+            <div id="mynetwork" class="card-body"></div>
+        </div>
+
+        
+        
+
+        <script type="text/javascript">
+
+              // initialize global variables.
+              var edges;
+              var nodes;
+              var allNodes;
+              var allEdges;
+              var nodeColors;
+              var originalNodes;
+              var network;
+              var container;
+              var options, data;
+              var filter = {
+                  item : '',
+                  property : '',
+                  value : []
+              };
+
+              
+
+              
+
+              // This method is responsible for drawing the graph, returns the drawn network
+              function drawGraph() {
+                  var container = document.getElementById('mynetwork');
+
+                  
+
+                  // parsing and collecting nodes and edges from the python
+                  nodes = new vis.DataSet([{"color": "#1f77b4", "id": "boldsky", "label": "boldsky", "shape": "hexagon", "title": "boldsky"}, {"color": [0.08509803921568627, 0.32666666666666666, 0.49411764705882355], "id": "Home N Garden", "label": "Home N Garden", "shape": "box", "title": "Home N Garden"}, {"color": "#ffbe70", "id": "sauna", "label": "sauna", "shape": "circle", "title": "sauna"}, {"color": "#ffbe70", "id": "weather", "label": "weather", "shape": "circle", "title": "weather"}, {"color": "#ffbe70", "id": "heat", "label": "heat", "shape": "circle", "title": "heat"}, {"color": "#ffbe70", "id": "toaster", "label": "toaster", "shape": "circle", "title": "toaster"}, {"color": "#ffbe70", "id": "oven", "label": "oven", "shape": "circle", "title": "oven"}, {"color": "#ffbe70", "id": "small appliance", "label": "small appliance", "shape": "circle", "title": "small appliance"}, {"color": "#ffbe70", "id": "microwave", "label": "microwave", "shape": "circle", "title": "microwave"}, {"color": "#ffbe70", "id": "slow cooker", "label": "slow cooker", "shape": "circle", "title": "slow cooker"}, {"color": "#ffbe70", "id": "copper", "label": "copper", "shape": "circle", "title": "copper"}, {"color": "#ffbe70", "id": "iron", "label": "iron", "shape": "circle", "title": "iron"}, {"color": "#ffbe70", "id": "grilling", "label": "grilling", "shape": "circle", "title": "grilling"}, {"color": "#ffbe70", "id": "cookware and bakeware", "label": "cookware and bakeware", "shape": "circle", "title": "cookware and bakeware"}, {"color": [0.08509803921568627, 0.32666666666666666, 0.49411764705882355], "id": "Insync", "label": "Insync", "shape": "box", "title": "Insync"}, {"color": "#ffbe70", "id": "television", "label": "television", "shape": "circle", "title": "television"}, {"color": "#ffbe70", "id": "film industry", "label": "film industry", "shape": "circle", "title": "film industry"}, {"color": "#ffbe70", "id": "leadership", "label": "leadership", "shape": "circle", "title": "leadership"}, {"color": "#ffbe70", "id": "personality", "label": "personality", "shape": "circle", "title": "personality"}, {"color": "#ffbe70", "id": "sociable", "label": "sociable", "shape": "circle", "title": "sociable"}, {"color": "#ffbe70", "id": "culture", "label": "culture", "shape": "circle", "title": "culture"}, {"color": "#ffbe70", "id": "bank", "label": "bank", "shape": "circle", "title": "bank"}, {"color": "#ffbe70", "id": "finance", "label": "finance", "shape": "circle", "title": "finance"}, {"color": "#ffbe70", "id": "funding", "label": "funding", "shape": "circle", "title": "funding"}, {"color": "#ffbe70", "id": "reputation", "label": "reputation", "shape": "circle", "title": "reputation"}, {"color": "#ffbe70", "id": "happines", "label": "happines", "shape": "circle", "title": "happines"}, {"color": [0.08509803921568627, 0.32666666666666666, 0.49411764705882355], "id": "Zodiac Signs", "label": "Zodiac Signs", "shape": "box", "title": "Zodiac Signs"}, {"color": "#ff7f0e", "id": "filmibeat", "label": "filmibeat", "shape": "hexagon", "title": "filmibeat"}, {"color": [0.7, 0.34862745098039216, 0.038431372549019606], "id": "Box Office", "label": "Box Office", "shape": "box", "title": "Box Office"}, {"color": "#ffbe70", "id": "stree 2", "label": "stree 2", "shape": "circle", "title": "stree 2"}, {"color": "#ffbe70", "id": "rajkummar rao", "label": "rajkummar rao", "shape": "circle", "title": "rajkummar rao"}, {"color": "#ffbe70", "id": "pankaj tripathi", "label": "pankaj tripathi", "shape": "circle", "title": "pankaj tripathi"}, {"color": "#ffbe70", "id": "aparshakti khurana", "label": "aparshakti khurana", "shape": "circle", "title": "aparshakti khurana"}, {"color": "#ffbe70", "id": "shraddha kapoor", "label": "shraddha kapoor", "shape": "circle", "title": "shraddha kapoor"}, {"color": [0.7, 0.34862745098039216, 0.038431372549019606], "id": "News", "label": "News", "shape": "box", "title": "News"}, {"color": "#ffbe70", "id": "khatron ke khiladi 14", "label": "khatron ke khiladi 14", "shape": "circle", "title": "khatron ke khiladi 14"}, {"color": "#ffbe70", "id": "shilpa shinde", "label": "shilpa shinde", "shape": "circle", "title": "shilpa shinde"}, {"color": "#ffbe70", "id": "nimrit kaur ahluwalia", "label": "nimrit kaur ahluwalia", "shape": "circle", "title": "nimrit kaur ahluwalia"}, {"color": [0.7, 0.34862745098039216, 0.038431372549019606], "id": "Ott", "label": "Ott", "shape": "box", "title": "Ott"}, {"color": "#ffbe70", "id": "zee5", "label": "zee5", "shape": "circle", "title": "zee5"}, {"color": "#ffbe70", "id": "berlin", "label": "berlin", "shape": "circle", "title": "berlin"}, {"color": "#ffbe70", "id": "1993", "label": "1993", "shape": "circle", "title": "1993"}, {"color": "#ffbe70", "id": "new delhi", "label": "new delhi", "shape": "circle", "title": "new delhi"}, {"color": "#ffbe70", "id": "demonte colony 2", "label": "demonte colony 2", "shape": "circle", "title": "demonte colony 2"}, {"color": "#ffbe70", "id": "r. ajay gnanamuthu", "label": "r. ajay gnanamuthu", "shape": "circle", "title": "r. ajay gnanamuthu"}, {"color": "#ffbe70", "id": "demonte colony", "label": "demonte colony", "shape": "circle", "title": "demonte colony"}, {"color": "#ffbe70", "id": "honeymoon photographer", "label": "honeymoon photographer", "shape": "circle", "title": "honeymoon photographer"}, {"color": "#ffbe70", "id": "jiocinema", "label": "jiocinema", "shape": "circle", "title": "jiocinema"}, {"color": "#ffbe70", "id": "maldive", "label": "maldive", "shape": "circle", "title": "maldive"}, {"color": "#ffbe70", "id": "taaza khabar", "label": "taaza khabar", "shape": "circle", "title": "taaza khabar"}, {"color": "#ffbe70", "id": "bhuvan bam", "label": "bhuvan bam", "shape": "circle", "title": "bhuvan bam"}, {"color": "#2ca02c", "id": "oneindia", "label": "oneindia", "shape": "hexagon", "title": "oneindia"}, {"color": [0.12078431372549019, 0.43921568627450974, 0.12078431372549019], "id": "Bengaluru", "label": "Bengaluru", "shape": "box", "title": "Bengaluru"}, {"color": [0.12078431372549019, 0.43921568627450974, 0.12078431372549019], "id": "Lifestyle", "label": "Lifestyle", "shape": "box", "title": "Lifestyle"}, {"color": "#ffbe70", "id": "joy", "label": "joy", "shape": "circle", "title": "joy"}, {"color": "#ffbe70", "id": "soul", "label": "soul", "shape": "circle", "title": "soul"}, {"color": "#ffbe70", "id": "pleasure", "label": "pleasure", "shape": "circle", "title": "pleasure"}, {"color": "#ffbe70", "id": "meditation", "label": "meditation", "shape": "circle", "title": "meditation"}, {"color": "#ffbe70", "id": "mental health", "label": "mental health", "shape": "circle", "title": "mental health"}, {"color": "#ffbe70", "id": "financial stability", "label": "financial stability", "shape": "circle", "title": "financial stability"}, {"color": "#ffbe70", "id": "prosperity", "label": "prosperity", "shape": "circle", "title": "prosperity"}, {"color": [0.12078431372549019, 0.43921568627450974, 0.12078431372549019], "id": "Sports", "label": "Sports", "shape": "box", "title": "Sports"}, {"color": "#ffbe70", "id": "2010 indian premier league", "label": "2010 indian premier league", "shape": "circle", "title": "2010 indian premier league"}, {"color": "#ffbe70", "id": "2010", "label": "2010", "shape": "circle", "title": "2010"}, {"color": "#ffbe70", "id": "1996 summer olympic", "label": "1996 summer olympic", "shape": "circle", "title": "1996 summer olympic"}, {"color": "#ffbe70", "id": "1996", "label": "1996", "shape": "circle", "title": "1996"}, {"color": "#ffbe70", "id": "leander pae", "label": "leander pae", "shape": "circle", "title": "leander pae"}, {"color": "#ffbe70", "id": "marrakesh", "label": "marrakesh", "shape": "circle", "title": "marrakesh"}, {"color": "#ffbe70", "id": "pari", "label": "pari", "shape": "circle", "title": "pari"}]);
+                  edges = new vis.DataSet([{"color": "#B0C4DE", "from": "boldsky", "label": "has_category", "title": "has_category", "to": "Home N Garden"}, {"color": "#4682B4", "from": "sauna", "to": "Home N Garden"}, {"color": "#4682B4", "from": "sauna", "label": "subclass of", "title": "subclass of", "to": "weather"}, {"color": "#4682B4", "from": "sauna", "label": "subclass of", "title": "subclass of", "to": "heat"}, {"color": "#4682B4", "from": "toaster", "to": "Home N Garden"}, {"color": "#4682B4", "from": "toaster", "label": "subclass of", "title": "subclass of", "to": "oven"}, {"color": "#4682B4", "from": "toaster", "label": "subclass of", "title": "subclass of", "to": "small appliance"}, {"color": "#4682B4", "from": "microwave", "to": "Home N Garden"}, {"color": "#4682B4", "from": "microwave", "label": "subclass of", "title": "subclass of", "to": "oven"}, {"color": "#4682B4", "from": "slow cooker", "to": "Home N Garden"}, {"color": "#4682B4", "from": "slow cooker", "label": "subclass of", "title": "subclass of", "to": "oven"}, {"color": "#4682B4", "from": "copper", "to": "Home N Garden"}, {"color": "#4682B4", "from": "copper", "label": "has part", "title": "has part", "to": "iron"}, {"color": "#4682B4", "from": "grilling", "to": "Home N Garden"}, {"color": "#4682B4", "from": "grilling", "label": "subclass of", "title": "subclass of", "to": "cookware and bakeware"}, {"color": "#B0C4DE", "from": "boldsky", "label": "has_category", "title": "has_category", "to": "Insync"}, {"color": "#4682B4", "from": "television", "to": "Insync"}, {"color": "#4682B4", "from": "television", "label": "subclass of", "title": "subclass of", "to": "film industry"}, {"color": "#4682B4", "from": "leadership", "to": "Insync"}, {"color": "#4682B4", "from": "leadership", "label": "subclass of", "title": "subclass of", "to": "personality"}, {"color": "#4682B4", "from": "sociable", "to": "Insync"}, {"color": "#4682B4", "from": "sociable", "label": "part of", "title": "part of", "to": "culture"}, {"color": "#4682B4", "from": "bank", "to": "Insync"}, {"color": "#4682B4", "from": "bank", "label": "part of", "title": "part of", "to": "finance"}, {"color": "#4682B4", "from": "funding", "to": "Insync"}, {"color": "#4682B4", "from": "funding", "label": "studied by", "title": "studied by", "to": "finance"}, {"color": "#4682B4", "from": "reputation", "to": "Insync"}, {"color": "#4682B4", "from": "reputation", "label": "facet of", "title": "facet of", "to": "happines"}, {"color": "#B0C4DE", "from": "boldsky", "label": "has_category", "title": "has_category", "to": "Zodiac Signs"}, {"color": "#B0C4DE", "from": "filmibeat", "label": "has_category", "title": "has_category", "to": "Box Office"}, {"color": "#4682B4", "from": "stree 2", "to": "Box Office"}, {"color": "#4682B4", "from": "stree 2", "label": "cast member", "title": "cast member", "to": "rajkummar rao"}, {"color": "#4682B4", "from": "stree 2", "label": "cast member", "title": "cast member", "to": "pankaj tripathi"}, {"color": "#4682B4", "from": "stree 2", "label": "cast member", "title": "cast member", "to": "aparshakti khurana"}, {"color": "#4682B4", "from": "stree 2", "label": "cast member", "title": "cast member", "to": "shraddha kapoor"}, {"color": "#B0C4DE", "from": "filmibeat", "label": "has_category", "title": "has_category", "to": "News"}, {"color": "#4682B4", "from": "khatron ke khiladi 14", "to": "News"}, {"color": "#4682B4", "from": "khatron ke khiladi 14", "label": "cast member", "title": "cast member", "to": "shilpa shinde"}, {"color": "#4682B4", "from": "khatron ke khiladi 14", "label": "cast member", "title": "cast member", "to": "nimrit kaur ahluwalia"}, {"color": "#B0C4DE", "from": "filmibeat", "label": "has_category", "title": "has_category", "to": "Ott"}, {"color": "#4682B4", "from": "zee5", "to": "Ott"}, {"color": "#4682B4", "from": "zee5", "label": "narrative location", "title": "narrative location", "to": "berlin"}, {"color": "#4682B4", "from": "berlin", "to": "Ott"}, {"color": "#4682B4", "from": "berlin", "label": "publication date", "title": "publication date", "to": "1993"}, {"color": "#4682B4", "from": "berlin", "label": "narrative location", "title": "narrative location", "to": "new delhi"}, {"color": "#4682B4", "from": "demonte colony 2", "to": "Ott"}, {"color": "#4682B4", "from": "demonte colony 2", "label": "director", "title": "director", "to": "r. ajay gnanamuthu"}, {"color": "#4682B4", "from": "demonte colony", "to": "Ott"}, {"color": "#4682B4", "from": "demonte colony", "label": "director", "title": "director", "to": "r. ajay gnanamuthu"}, {"color": "#4682B4", "from": "honeymoon photographer", "to": "Ott"}, {"color": "#4682B4", "from": "honeymoon photographer", "label": "distributed by", "title": "distributed by", "to": "jiocinema"}, {"color": "#4682B4", "from": "honeymoon photographer", "label": "narrative location", "title": "narrative location", "to": "maldive"}, {"color": "#4682B4", "from": "taaza khabar", "to": "Ott"}, {"color": "#4682B4", "from": "taaza khabar", "label": "cast member", "title": "cast member", "to": "bhuvan bam"}, {"color": "#B0C4DE", "from": "oneindia", "label": "has_category", "title": "has_category", "to": "Bengaluru"}, {"color": "#B0C4DE", "from": "oneindia", "label": "has_category", "title": "has_category", "to": "Lifestyle"}, {"color": "#4682B4", "from": "joy", "to": "Lifestyle"}, {"color": "#4682B4", "from": "joy", "label": "part of", "title": "part of", "to": "soul"}, {"color": "#4682B4", "from": "joy", "label": "has part", "title": "has part", "to": "pleasure"}, {"color": "#4682B4", "from": "joy", "label": "has part", "title": "has part", "to": "happines"}, {"color": "#4682B4", "from": "meditation", "to": "Lifestyle"}, {"color": "#4682B4", "from": "meditation", "label": "facet of", "title": "facet of", "to": "mental health"}, {"color": "#4682B4", "from": "financial stability", "to": "Lifestyle"}, {"color": "#4682B4", "from": "financial stability", "label": "facet of", "title": "facet of", "to": "prosperity"}, {"color": "#B0C4DE", "from": "oneindia", "label": "has_category", "title": "has_category", "to": "Sports"}, {"color": "#4682B4", "from": "2010 indian premier league", "to": "Sports"}, {"color": "#4682B4", "from": "2010 indian premier league", "label": "point in time", "title": "point in time", "to": "2010"}, {"color": "#4682B4", "from": "1996 summer olympic", "to": "Sports"}, {"color": "#4682B4", "from": "1996 summer olympic", "label": "point in time", "title": "point in time", "to": "1996"}, {"color": "#4682B4", "from": "leander pae", "to": "Sports"}, {"color": "#4682B4", "from": "leander pae", "label": "participant in", "title": "participant in", "to": "1996 summer olympic"}, {"color": "#4682B4", "from": "marrakesh", "to": "Sports"}, {"color": "#4682B4", "from": "marrakesh", "label": "twinned administrative body", "title": "twinned administrative body", "to": "pari"}, {"color": "#4682B4", "from": "pari", "to": "Sports"}]);
+
+                  nodeColors = {};
+                  allNodes = nodes.get({ returnType: "Object" });
+                  for (nodeId in allNodes) {
+                    nodeColors[nodeId] = allNodes[nodeId].color;
+                  }
+                  allEdges = edges.get({ returnType: "Object" });
+                  // adding nodes and edges to the graph
+                  data = {nodes: nodes, edges: edges};
+
+                  var options = {
+    "configure": {
+        "enabled": false
+    },
+    "edges": {
+        "color": {
+            "inherit": true
+        },
+        "smooth": {
+            "enabled": true,
+            "type": "dynamic"
+        }
+    },
+    "interaction": {
+        "dragNodes": true,
+        "hideEdgesOnDrag": false,
+        "hideNodesOnDrag": false
+    },
+    "physics": {
+        "enabled": true,
+        "forceAtlas2Based": {
+            "avoidOverlap": 0,
+            "centralGravity": 0.01,
+            "damping": 0.4,
+            "gravitationalConstant": -50,
+            "springConstant": 0.08,
+            "springLength": 100
+        },
+        "solver": "forceAtlas2Based",
+        "stabilization": {
+            "enabled": true,
+            "fit": true,
+            "iterations": 1000,
+            "onlyDynamicEdges": false,
+            "updateInterval": 50
+        }
+    }
+};
+
+                  
+
+
+                  
+
+                  network = new vis.Network(container, data, options);
+
+                  
+
+                  
+
+                  
+
+
+                  
+
+                  return network;
+
+              }
+              drawGraph();
+        </script>
+    </body>
+</html>

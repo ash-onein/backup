@@ -1,0 +1,21 @@
+1. Add deploy.sh - steps to run all files together
+2. Add gitignore 
+3. check other repo in github
+4. Dockerize the application
+above for api code part ^
+
+
+*code should be replicable in every vm
+
+below is for training data part
+1. create requirements.txt
+2. add dataprep code also
+3. readme files
+4. deploy.sh
+
+ipbynb - config.yaml, utils.py, model.py and train part
+
+Also, Add readme files in both repos
+
+this should clearly mention everything from usage to methodology
+

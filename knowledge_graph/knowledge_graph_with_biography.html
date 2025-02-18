@@ -1,0 +1,1291 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        
+            <script>function neighbourhoodHighlight(params) {
+  // console.log("in nieghbourhoodhighlight");
+  allNodes = nodes.get({ returnType: "Object" });
+  // originalNodes = JSON.parse(JSON.stringify(allNodes));
+  // if something is selected:
+  if (params.nodes.length > 0) {
+    highlightActive = true;
+    var i, j;
+    var selectedNode = params.nodes[0];
+    var degrees = 2;
+
+    // mark all nodes as hard to read.
+    for (let nodeId in allNodes) {
+      // nodeColors[nodeId] = allNodes[nodeId].color;
+      allNodes[nodeId].color = "rgba(200,200,200,0.5)";
+      if (allNodes[nodeId].hiddenLabel === undefined) {
+        allNodes[nodeId].hiddenLabel = allNodes[nodeId].label;
+        allNodes[nodeId].label = undefined;
+      }
+    }
+    var connectedNodes = network.getConnectedNodes(selectedNode);
+    var allConnectedNodes = [];
+
+    // get the second degree nodes
+    for (i = 1; i < degrees; i++) {
+      for (j = 0; j < connectedNodes.length; j++) {
+        allConnectedNodes = allConnectedNodes.concat(
+          network.getConnectedNodes(connectedNodes[j])
+        );
+      }
+    }
+
+    // all second degree nodes get a different color and their label back
+    for (i = 0; i < allConnectedNodes.length; i++) {
+      // allNodes[allConnectedNodes[i]].color = "pink";
+      allNodes[allConnectedNodes[i]].color = "rgba(150,150,150,0.75)";
+      if (allNodes[allConnectedNodes[i]].hiddenLabel !== undefined) {
+        allNodes[allConnectedNodes[i]].label =
+          allNodes[allConnectedNodes[i]].hiddenLabel;
+        allNodes[allConnectedNodes[i]].hiddenLabel = undefined;
+      }
+    }
+
+    // all first degree nodes get their own color and their label back
+    for (i = 0; i < connectedNodes.length; i++) {
+      // allNodes[connectedNodes[i]].color = undefined;
+      allNodes[connectedNodes[i]].color = nodeColors[connectedNodes[i]];
+      if (allNodes[connectedNodes[i]].hiddenLabel !== undefined) {
+        allNodes[connectedNodes[i]].label =
+          allNodes[connectedNodes[i]].hiddenLabel;
+        allNodes[connectedNodes[i]].hiddenLabel = undefined;
+      }
+    }
+
+    // the main node gets its own color and its label back.
+    // allNodes[selectedNode].color = undefined;
+    allNodes[selectedNode].color = nodeColors[selectedNode];
+    if (allNodes[selectedNode].hiddenLabel !== undefined) {
+      allNodes[selectedNode].label = allNodes[selectedNode].hiddenLabel;
+      allNodes[selectedNode].hiddenLabel = undefined;
+    }
+  } else if (highlightActive === true) {
+    // console.log("highlightActive was true");
+    // reset all nodes
+    for (let nodeId in allNodes) {
+      // allNodes[nodeId].color = "purple";
+      allNodes[nodeId].color = nodeColors[nodeId];
+      // delete allNodes[nodeId].color;
+      if (allNodes[nodeId].hiddenLabel !== undefined) {
+        allNodes[nodeId].label = allNodes[nodeId].hiddenLabel;
+        allNodes[nodeId].hiddenLabel = undefined;
+      }
+    }
+    highlightActive = false;
+  }
+
+  // transform the object into an array
+  var updateArray = [];
+  if (params.nodes.length > 0) {
+    for (let nodeId in allNodes) {
+      if (allNodes.hasOwnProperty(nodeId)) {
+        // console.log(allNodes[nodeId]);
+        updateArray.push(allNodes[nodeId]);
+      }
+    }
+    nodes.update(updateArray);
+  } else {
+    // console.log("Nothing was selected");
+    for (let nodeId in allNodes) {
+      if (allNodes.hasOwnProperty(nodeId)) {
+        // console.log(allNodes[nodeId]);
+        // allNodes[nodeId].color = {};
+        updateArray.push(allNodes[nodeId]);
+      }
+    }
+    nodes.update(updateArray);
+  }
+}
+
+function filterHighlight(params) {
+  allNodes = nodes.get({ returnType: "Object" });
+  // if something is selected:
+  if (params.nodes.length > 0) {
+    filterActive = true;
+    let selectedNodes = params.nodes;
+
+    // hiding all nodes and saving the label
+    for (let nodeId in allNodes) {
+      allNodes[nodeId].hidden = true;
+      if (allNodes[nodeId].savedLabel === undefined) {
+        allNodes[nodeId].savedLabel = allNodes[nodeId].label;
+        allNodes[nodeId].label = undefined;
+      }
+    }
+
+    for (let i=0; i < selectedNodes.length; i++) {
+      allNodes[selectedNodes[i]].hidden = false;
+      if (allNodes[selectedNodes[i]].savedLabel !== undefined) {
+        allNodes[selectedNodes[i]].label = allNodes[selectedNodes[i]].savedLabel;
+        allNodes[selectedNodes[i]].savedLabel = undefined;
+      }
+    }
+
+  } else if (filterActive === true) {
+    // reset all nodes
+    for (let nodeId in allNodes) {
+      allNodes[nodeId].hidden = false;
+      if (allNodes[nodeId].savedLabel !== undefined) {
+        allNodes[nodeId].label = allNodes[nodeId].savedLabel;
+        allNodes[nodeId].savedLabel = undefined;
+      }
+    }
+    filterActive = false;
+  }
+
+  // transform the object into an array
+  var updateArray = [];
+  if (params.nodes.length > 0) {
+    for (let nodeId in allNodes) {
+      if (allNodes.hasOwnProperty(nodeId)) {
+        updateArray.push(allNodes[nodeId]);
+      }
+    }
+    nodes.update(updateArray);
+  } else {
+    for (let nodeId in allNodes) {
+      if (allNodes.hasOwnProperty(nodeId)) {
+        updateArray.push(allNodes[nodeId]);
+      }
+    }
+    nodes.update(updateArray);
+  }
+}
+
+function selectNode(nodes) {
+  network.selectNodes(nodes);
+  neighbourhoodHighlight({ nodes: nodes });
+  return nodes;
+}
+
+function selectNodes(nodes) {
+  network.selectNodes(nodes);
+  filterHighlight({nodes: nodes});
+  return nodes;
+}
+
+function highlightFilter(filter) {
+  let selectedNodes = []
+  let selectedProp = filter['property']
+  if (filter['item'] === 'node') {
+    let allNodes = nodes.get({ returnType: "Object" });
+    for (let nodeId in allNodes) {
+      if (allNodes[nodeId][selectedProp] && filter['value'].includes((allNodes[nodeId][selectedProp]).toString())) {
+        selectedNodes.push(nodeId)
+      }
+    }
+  }
+  else if (filter['item'] === 'edge'){
+    let allEdges = edges.get({returnType: 'object'});
+    // check if the selected property exists for selected edge and select the nodes connected to the edge
+    for (let edge in allEdges) {
+      if (allEdges[edge][selectedProp] && filter['value'].includes((allEdges[edge][selectedProp]).toString())) {
+        selectedNodes.push(allEdges[edge]['from'])
+        selectedNodes.push(allEdges[edge]['to'])
+      }
+    }
+  }
+  selectNodes(selectedNodes)
+}</script>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/dist/vis-network.min.css" integrity="sha512-WgxfT5LWjfszlPHXRmBWHkV2eceiWTOBvrKCNbdgDYTHrT2AeLCGbF4sZlZw3UMN3WtL0tGUoIAKsu8mllg/XA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/vis-network.min.js" integrity="sha512-LnvoEWDFrqGHlHmDD2101OrLcbsfkrzoSpvtSQtxK3RMnRV0eOkhhBN2dXHKRrUU8p2DGRTk35n4O8nWSVe1mQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+            
+            
+            
+            
+            
+            
+                <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tom-select/2.0.0-rc.4/css/tom-select.min.css" integrity="sha512-43fHB3GLgZfz8QXl1RPQ8O66oIgv3po9cJ5erMt1c4QISq9dYb195T3vr5ImnJPXuVroKcGBPXBFKETW8jrPNQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+                <script src="https://cdnjs.cloudflare.com/ajax/libs/tom-select/2.0.0-rc.4/js/tom-select.complete.js" integrity="sha512-jeF9CfnvzDiw9G9xiksVjxR2lib44Gnovvkv+3CgCG6NXCD4gqlA5nDAVW5WjpA+i+/zKsUWV5xNEbW1X/HH0Q==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+            
+
+        
+<center>
+<h1></h1>
+</center>
+
+<!-- <link rel="stylesheet" href="../node_modules/vis/dist/vis.min.css" type="text/css" />
+<script type="text/javascript" src="../node_modules/vis/dist/vis.js"> </script>-->
+        <link
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css"
+          rel="stylesheet"
+          integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6"
+          crossorigin="anonymous"
+        />
+        <script
+          src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js"
+          integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf"
+          crossorigin="anonymous"
+        ></script>
+
+
+        <center>
+          <h1></h1>
+        </center>
+        <style type="text/css">
+
+             #mynetwork {
+                 width: 100%;
+                 height: 750px;
+                 background-color: #ffffff;
+                 border: 1px solid lightgray;
+                 position: relative;
+                 float: left;
+             }
+
+             
+             #loadingBar {
+                 position:absolute;
+                 top:0px;
+                 left:0px;
+                 width: 100%;
+                 height: 750px;
+                 background-color:rgba(200,200,200,0.8);
+                 -webkit-transition: all 0.5s ease;
+                 -moz-transition: all 0.5s ease;
+                 -ms-transition: all 0.5s ease;
+                 -o-transition: all 0.5s ease;
+                 transition: all 0.5s ease;
+                 opacity:1;
+             }
+
+             #bar {
+                 position:absolute;
+                 top:0px;
+                 left:0px;
+                 width:20px;
+                 height:20px;
+                 margin:auto auto auto auto;
+                 border-radius:11px;
+                 border:2px solid rgba(30,30,30,0.05);
+                 background: rgb(0, 173, 246); /* Old browsers */
+                 box-shadow: 2px 0px 4px rgba(0,0,0,0.4);
+             }
+
+             #border {
+                 position:absolute;
+                 top:10px;
+                 left:10px;
+                 width:500px;
+                 height:23px;
+                 margin:auto auto auto auto;
+                 box-shadow: 0px 0px 4px rgba(0,0,0,0.2);
+                 border-radius:10px;
+             }
+
+             #text {
+                 position:absolute;
+                 top:8px;
+                 left:530px;
+                 width:30px;
+                 height:50px;
+                 margin:auto auto auto auto;
+                 font-size:22px;
+                 color: #000000;
+             }
+
+             div.outerBorder {
+                 position:relative;
+                 top:400px;
+                 width:600px;
+                 height:44px;
+                 margin:auto auto auto auto;
+                 border:8px solid rgba(0,0,0,0.1);
+                 background: rgb(252,252,252); /* Old browsers */
+                 background: -moz-linear-gradient(top,  rgba(252,252,252,1) 0%, rgba(237,237,237,1) 100%); /* FF3.6+ */
+                 background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(252,252,252,1)), color-stop(100%,rgba(237,237,237,1))); /* Chrome,Safari4+ */
+                 background: -webkit-linear-gradient(top,  rgba(252,252,252,1) 0%,rgba(237,237,237,1) 100%); /* Chrome10+,Safari5.1+ */
+                 background: -o-linear-gradient(top,  rgba(252,252,252,1) 0%,rgba(237,237,237,1) 100%); /* Opera 11.10+ */
+                 background: -ms-linear-gradient(top,  rgba(252,252,252,1) 0%,rgba(237,237,237,1) 100%); /* IE10+ */
+                 background: linear-gradient(to bottom,  rgba(252,252,252,1) 0%,rgba(237,237,237,1) 100%); /* W3C */
+                 filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#fcfcfc', endColorstr='#ededed',GradientType=0 ); /* IE6-9 */
+                 border-radius:72px;
+                 box-shadow: 0px 0px 10px rgba(0,0,0,0.2);
+             }
+             
+
+             
+
+             
+        </style>
+    </head>
+
+
+    <body>
+        <div class="card" style="width: 100%">
+            
+                <div id="select-menu" class="card-header">
+                    <div class="row no-gutters">
+                        <div class="col-10 pb-2">
+                            <select
+                            class="form-select"
+                            aria-label="Default select example"
+                            onchange="selectNode([value]);"
+                            id="select-node"
+                            placeholder="Select node..."
+                            >
+                                <option selected>Select a Node by ID</option>
+                                
+                                    <option value="Abhijeet Bhattacharya">Abhijeet Bhattacharya</option>
+                                
+                                    <option value="Singer">Singer</option>
+                                
+                                    <option value="male">male</option>
+                                
+                                    <option value="30 Oct 1958">30 Oct 1958</option>
+                                
+                                    <option value="IN">IN</option>
+                                
+                                    <option value="Kanpur">Kanpur</option>
+                                
+                                    <option value="Kanpur (UP)">Kanpur (UP)</option>
+                                
+                                    <option value="Dev Anand">Dev Anand</option>
+                                
+                                    <option value="son">son</option>
+                                
+                                    <option value="1981">1981</option>
+                                
+                                    <option value="Mumbai">Mumbai</option>
+                                
+                                    <option value="debut film">debut film</option>
+                                
+                                    <option value="Kishore Kumar">Kishore Kumar</option>
+                                
+                                    <option value="Anand Aur Anand">Anand Aur Anand</option>
+                                
+                                    <option value="Tan tana tan tan tara">Tan tana tan tan tara</option>
+                                
+                                    <option value="Judwaa">Judwaa</option>
+                                
+                                    <option value="Jhanjhriya">Jhanjhriya</option>
+                                
+                                    <option value="Krishna">Krishna</option>
+                                
+                                    <option value="Tere Bina">Tere Bina</option>
+                                
+                                    <option value="Aashiqui">Aashiqui</option>
+                                
+                                    <option value="pop">pop</option>
+                                
+                                    <option value="Sumati Bhattacharya">Sumati Bhattacharya</option>
+                                
+                                    <option value="Abhijeet Sawant">Abhijeet Sawant</option>
+                                
+                                    <option value="Actor">Actor</option>
+                                
+                                    <option value="07 Oct 1981">07 Oct 1981</option>
+                                
+                                    <option value="October 7, 1981">October 7, 1981</option>
+                                
+                                    <option value="Pop Idol">Pop Idol</option>
+                                
+                                    <option value="UK">UK</option>
+                                
+                                    <option value="Aapka Abhijeet Sawant">Aapka Abhijeet Sawant</option>
+                                
+                                    <option value="April 7, 2005">April 7, 2005</option>
+                                
+                                    <option value="Ashiq Banaya Aapne">Ashiq Banaya Aapne</option>
+                                
+                                    <option value="Himesh Reshammiya">Himesh Reshammiya</option>
+                                
+                                    <option value="Everything I Do">Everything I Do</option>
+                                
+                                    <option value="Brian Adams">Brian Adams</option>
+                                
+                                    <option value="Shilpa">Shilpa</option>
+                                
+                                    <option value="Abhijit (Kannada Actor)">Abhijit (Kannada Actor)</option>
+                                
+                                    <option value="Director">Director</option>
+                                
+                                    <option value="Producer">Producer</option>
+                                
+                                    <option value="30 Jul 1963">30 Jul 1963</option>
+                                
+                                    <option value="Chellakere, Chitradurga district, Karnataka">Chellakere, Chitradurga district, Karnataka</option>
+                                
+                                    <option value="30 July 1963">30 July 1963</option>
+                                
+                                    <option value="Ranjitha">Ranjitha</option>
+                                
+                                    <option value="1993">1993</option>
+                                
+                                    <option value="K. V Jayram">K. V Jayram</option>
+                                
+                                    <option value="College Hero">College Hero</option>
+                                
+                                    <option value="Jeevana Chaitra">Jeevana Chaitra</option>
+                                
+                                    <option value="1991">1991</option>
+                                
+                                    <option value="Rajkumar">Rajkumar</option>
+                                
+                                    <option value="Yejamana">Yejamana</option>
+                                
+                                    <option value="1999">1999</option>
+                                
+                                    <option value="Vishnuvardhan">Vishnuvardhan</option>
+                                
+                                    <option value="Shashi Kumar">Shashi Kumar</option>
+                                
+                                    <option value="Jodi No. 1">Jodi No. 1</option>
+                                
+                                    <option value="2009">2009</option>
+                                
+                                    <option value="Samara Simha Nayaka">Samara Simha Nayaka</option>
+                                
+                                    <option value="Aksharamaale">Aksharamaale</option>
+                                
+                                    <option value="Abhijit Sinha">Abhijit Sinha</option>
+                                
+                                    <option value="25 Apr 1977">25 Apr 1977</option>
+                                
+                                    <option value="25th April 1977">25th April 1977</option>
+                                
+                                    <option value="Patna">Patna</option>
+                                
+                                    <option value="Anamika Sinha">Anamika Sinha</option>
+                                
+                                    <option value="Abhishek Sinha">Abhishek Sinha</option>
+                                
+                                    <option value="New Delhi">New Delhi</option>
+                                
+                                    <option value="Patna University">Patna University</option>
+                                
+                                    <option value="Farhan Akhter">Farhan Akhter</option>
+                                
+                                    <option value="Anurag Kashyap">Anurag Kashyap</option>
+                                
+                                    <option value="Godrej Industries">Godrej Industries</option>
+                                
+                                    <option value="Nagpur">Nagpur</option>
+                                
+                                    <option value="Reliance">Reliance</option>
+                                
+                                    <option value="Euphoria Films">Euphoria Films</option>
+                                
+                                    <option value="2017">2017</option>
+                                
+                                    <option value="Ekjute Thatre">Ekjute Thatre</option>
+                                
+                                    <option value="Nadira Babbar">Nadira Babbar</option>
+                                
+                                    <option value="Abhilash Joshiy">Abhilash Joshiy</option>
+                                
+                                    <option value="King Of Kotha">King Of Kotha</option>
+                                
+                                    <option value="Dulquer Salmaan">Dulquer Salmaan</option>
+                                
+                                    <option value="Aishwarya Lekshmi">Aishwarya Lekshmi</option>
+                                
+                                    <option value="2023">2023</option>
+                                
+                                    <option value="Abhilash Pillai">Abhilash Pillai</option>
+                                
+                                    <option value="Screenplay">Screenplay</option>
+                                
+                                    <option value="Story">Story</option>
+                                
+                                    <option value="17 May 1969">17 May 1969</option>
+                                
+                                    <option value="May 17, 1969">May 17, 1969</option>
+                                
+                                    <option value="Thiruvananthapuram">Thiruvananthapuram</option>
+                                
+                                    <option value="Royal Academy of Dramatic Arts">Royal Academy of Dramatic Arts</option>
+                                
+                                    <option value="Abhinaya Theatre and Research Institute">Abhinaya Theatre and Research Institute</option>
+                                
+                                    <option value="Trivandrum">Trivandrum</option>
+                                
+                                    <option value="National School of Drama">National School of Drama</option>
+                                
+                                    <option value="Pathaamvalavu">Pathaamvalavu</option>
+                                
+                                    <option value="2022">2022</option>
+                                
+                                    <option value="Indrajith Sukumaran">Indrajith Sukumaran</option>
+                                
+                                    <option value="Abhimann Roy">Abhimann Roy</option>
+                                
+                                    <option value="Music Director">Music Director</option>
+                                
+                                    <option value="Lyricst">Lyricst</option>
+                                
+                                    <option value="female">female</option>
+                                
+                                    <option value="16 Feb 1979">16 Feb 1979</option>
+                                
+                                    <option value="2001">2001</option>
+                                
+                                    <option value="Kullralokaand">Kullralokaand</option>
+                                
+                                    <option value="Abhimanyu Dassani">Abhimanyu Dassani</option>
+                                
+                                    <option value="Bhagyashree">Bhagyashree</option>
+                                
+                                    <option value="Abhimanyu Kashinath">Abhimanyu Kashinath</option>
+                                
+                                    <option value="Alok Kashinath">Alok Kashinath</option>
+                                
+                                    <option value="Baaji">Baaji</option>
+                                
+                                    <option value="S Shidlaghatta Srinivas">S Shidlaghatta Srinivas</option>
+                                
+                                    <option value="Abhinav Kashyap">Abhinav Kashyap</option>
+                                
+                                    <option value="Gorakhpur, Uttar Pradesh">Gorakhpur, Uttar Pradesh</option>
+                                
+                                    <option value="Dabangg">Dabangg</option>
+                                
+                                    <option value="2010">2010</option>
+                                
+                                    <option value="Salman Khan">Salman Khan</option>
+                                
+                                    <option value="Sonakshi Sinha">Sonakshi Sinha</option>
+                                
+                                    <option value="Jung">Jung</option>
+                                
+                                    <option value="2000">2000</option>
+                                
+                                    <option value="Abhinav Shukla">Abhinav Shukla</option>
+                                
+                                    <option value="27 Sep 1982">27 Sep 1982</option>
+                                
+                                    <option value="Ludhiana, Punjab">Ludhiana, Punjab</option>
+                                
+                                    <option value="Bigg Boss season 14">Bigg Boss season 14</option>
+                                
+                                    <option value="Abhinay Vaddi">Abhinay Vaddi</option>
+                                
+                                    <option value="18 Mar 1983">18 Mar 1983</option>
+                                
+                                    <option value="Ramanujan">Ramanujan</option>
+                                
+                                    <option value="Bigg Boss Tamil season 5">Bigg Boss Tamil season 5</option>
+                                
+                                    <option value="Star Vij">Star Vij</option>
+                                
+                                    <option value="Chennai 60028 Part 2">Chennai 60028 Part 2</option>
+                                
+                                    <option value="Venkat Prabhu">Venkat Prabhu</option>
+                                
+                                    <option value="Kamal Haasan">Kamal Haasan</option>
+                                
+                                    <option value="Abhinaya">Abhinaya</option>
+                                
+                                    <option value="Actress">Actress</option>
+                                
+                                    <option value="13 Nov 1991">13 Nov 1991</option>
+                                
+                                    <option value="Rajahmundry, Andhra Pradesh">Rajahmundry, Andhra Pradesh</option>
+                                
+                                    <option value="mgabhinaya">mgabhinaya</option>
+                                
+                                    <option value="November 13, 1991">November 13, 1991</option>
+                                
+                                    <option value="Naadodigal">Naadodigal</option>
+                                
+                                    <option value="7aam Arivu">7aam Arivu</option>
+                                
+                                    <option value="Suriya">Suriya</option>
+                                
+                                    <option value="2011">2011</option>
+                                
+                                    <option value="Easan">Easan</option>
+                                
+                                    <option value="Sasikumar">Sasikumar</option>
+                                
+                                    <option value="Dammu">Dammu</option>
+                                
+                                    <option value="NTR">NTR</option>
+                                
+                                    <option value="Dhamarukam">Dhamarukam</option>
+                                
+                                    <option value="Genius">Genius</option>
+                                
+                                    <option value="Abhinaya (Old Kannada Actress)">Abhinaya (Old Kannada Actress)</option>
+                                
+                                    <option value="1984">1984</option>
+                                
+                                    <option value="Anubhava">Anubhava</option>
+                                
+                                    <option value="Kashinath">Kashinath</option>
+                                
+                                    <option value="Abhinaya Sri">Abhinaya Sri</option>
+                                
+                                    <option value="25 Mar 1988">25 Mar 1988</option>
+                                
+                                    <option value="Chennai, Tamil Nadu">Chennai, Tamil Nadu</option>
+                                
+                                    <option value="Arya">Arya</option>
+                                
+                                    <option value="Kariya">Kariya</option>
+                                
+                                    <option value="Darshan">Darshan</option>
+                                
+                                    <option value="Abhirami">Abhirami</option>
+                                
+                                    <option value="26 Jul 1983">26 Jul 1983</option>
+                                
+                                    <option value="Mar Ivanios College">Mar Ivanios College</option>
+                                
+                                    <option value="Abhirami Venkatachalam">Abhirami Venkatachalam</option>
+                                
+                                    <option value="09 Mar 0">09 Mar 0</option>
+                                
+                                    <option value="Chennai, Tamil Nadu.">Chennai, Tamil Nadu.</option>
+                                
+                                    <option value="Kalavu">Kalavu</option>
+                                
+                                    <option value="2019">2019</option>
+                                
+                                    <option value="Murali Karthick">Murali Karthick</option>
+                                
+                                    <option value="Abhishek (Telugu Actor)">Abhishek (Telugu Actor)</option>
+                                
+                                    <option value="Aithe">Aithe</option>
+                                
+                                    <option value="Chandrasekhar Yeleti">Chandrasekhar Yeleti</option>
+                                
+                                    <option value="2003">2003</option>
+                                
+                                    <option value="Abhishek Ambareesh">Abhishek Ambareesh</option>
+                                
+                                    <option value="03 Oct 1993">03 Oct 1993</option>
+                                
+                                    <option value="Bengaluru, Karnataka">Bengaluru, Karnataka</option>
+                                
+                                    <option value="Amar">Amar</option>
+                                
+                                    <option value="Bad Manners">Bad Manners</option>
+                                
+                                    <option value="Duniya Suri">Duniya Suri</option>
+                                
+                                    <option value="Kali">Kali</option>
+                                
+                                    <option value="Abhishek Bachchan">Abhishek Bachchan</option>
+                                
+                                    <option value="05 Feb 1976">05 Feb 1976</option>
+                                
+                                    <option value="Mumbai, Maharashtra">Mumbai, Maharashtra</option>
+                                
+                                    <option value="@juniorbachchan">@juniorbachchan</option>
+                                
+                                    <option value="Jaya Bachchan">Jaya Bachchan</option>
+                                
+                                    <option value="Amitabh Bachchan">Amitabh Bachchan</option>
+                                
+                                    <option value="2002">2002</option>
+                                
+                                    <option value="Shweta Bachchan-Nanda">Shweta Bachchan-Nanda</option>
+                                
+                                    <option value="Shweta Bach">Shweta Bach</option>
+                                
+                                    <option value="Aishwary Rai">Aishwary Rai</option>
+                                
+                                    <option value="2004">2004</option>
+                                
+                                    <option value="Dhoom">Dhoom</option>
+                                
+                                    <option value="Bunty aur Babli">Bunty aur Babli</option>
+                                
+                                    <option value="2005">2005</option>
+                                
+                                    <option value="Sarkar">Sarkar</option>
+                                
+                                    <option value="Dus">Dus</option>
+                                
+                                    <option value="Bluffmaster">Bluffmaster</option>
+                                
+                                    <option value="2006">2006</option>
+                                
+                                    <option value="Guru">Guru</option>
+                                
+                                    <option value="2007">2007</option>
+                                
+                                    <option value="Paa">Paa</option>
+                                
+                                    <option value="Kabhi Alvida Naa Kehena">Kabhi Alvida Naa Kehena</option>
+                                
+                                    <option value="Raavan">Raavan</option>
+                                
+                                    <option value="Aishwarya Rai Bachchan">Aishwarya Rai Bachchan</option>
+                                
+                                    <option value="Dhoom-3">Dhoom-3</option>
+                                
+                                    <option value="2013">2013</option>
+                                
+                                    <option value="Vijay Krishna Acharya">Vijay Krishna Acharya</option>
+                                
+                                    <option value="Abhishek Bannerjee">Abhishek Bannerjee</option>
+                                
+                                    <option value="05 May 1985">05 May 1985</option>
+                                
+                                    <option value="Kharagpur, West Bengal">Kharagpur, West Bengal</option>
+                                
+                                    <option value="May 5, 1985">May 5, 1985</option>
+                                
+                                    <option value="The Dirty Picture">The Dirty Picture</option>
+                                
+                                    <option value="Stree">Stree</option>
+                                
+                                    <option value="horror">horror</option>
+                                
+                                    <option value="Mirzapur">Mirzapur</option>
+                                
+                                    <option value="Rang De Basanti">Rang De Basanti</option>
+                                
+                                    <option value="Abhishek Das">Abhishek Das</option>
+                                
+                                    <option value="Gattimela">Gattimela</option>
+                                
+                                    <option value="Abhishek Jayadeep">Abhishek Jayadeep</option>
+                                
+                                    <option value="Thrissur, Kerala">Thrissur, Kerala</option>
+                                
+                                    <option value="Pune">Pune</option>
+                                
+                                    <option value="Abhishek Kapoor">Abhishek Kapoor</option>
+                                
+                                    <option value="Uff!Yeh Mohabbat">Uff!Yeh Mohabbat</option>
+                                
+                                    <option value="1996">1996</option>
+                                
+                                    <option value="Twinkle Khanna">Twinkle Khanna</option>
+                                
+                                    <option value="Vipin Handa">Vipin Handa</option>
+                                
+                                    <option value="Rock On">Rock On</option>
+                                
+                                    <option value="2008">2008</option>
+                                
+                                    <option value="Farhan Akhtar">Farhan Akhtar</option>
+                                
+                                    <option value="Aryan">Aryan</option>
+                                
+                                    <option value="Abhishek Kapur">Abhishek Kapur</option>
+                                
+                                    <option value="Kundali Bhagya">Kundali Bhagya</option>
+                                
+                                    <option value="Abhishek kumar">Abhishek kumar</option>
+                                
+                                    <option value="Editing">Editing</option>
+                                
+                                    <option value="Indian Idol">Indian Idol</option>
+                                
+                                    <option value="TV series">TV series</option>
+                                
+                                    <option value=""Indian Idol"">"Indian Idol"</option>
+                                
+                                    <option value=""Indian Idol" (2004)">"Indian Idol" (2004)</option>
+                                
+                                    <option value="Abhishek Kumar">Abhishek Kumar</option>
+                                
+                                    <option value="26 Aug 1995">26 Aug 1995</option>
+                                
+                                    <option value="Punjab">Punjab</option>
+                                
+                                    <option value="Udaariyaan">Udaariyaan</option>
+                                
+                                    <option value="2018">2018</option>
+                                
+                                    <option value="Abhishek Malhan">Abhishek Malhan</option>
+                                
+                                    <option value="24 May 1997">24 May 1997</option>
+                                
+                                    <option value="Pitampura, Delhi">Pitampura, Delhi</option>
+                                
+                                    <option value="Bigg Boss OTT 2">Bigg Boss OTT 2</option>
+                                
+                                    <option value="Abhishek Sreekumar">Abhishek Sreekumar</option>
+                                
+                                    <option value="Kerala">Kerala</option>
+                                
+                                    <option value="Bigg Boss Malayalam Season 6">Bigg Boss Malayalam Season 6</option>
+                                
+                                    <option value="Abi">Abi</option>
+                                
+                                    <option value="Shane Nigam">Shane Nigam</option>
+                                
+                                    <option value="Abi Saravanan">Abi Saravanan</option>
+                                
+                                    <option value="Saahasam">Saahasam</option>
+                                
+                                    <option value="Touring Talkies">Touring Talkies</option>
+                                
+                                    <option value="Abijeeth Duddala">Abijeeth Duddala</option>
+                                
+                                    <option value="11 Oct 1988">11 Oct 1988</option>
+                                
+                                    <option value="Hyderabad, Andhra Pradesh">Hyderabad, Andhra Pradesh</option>
+                                
+                                    <option value="Bigg Boss 4">Bigg Boss 4</option>
+                                
+                                    <option value="Big Brother">Big Brother</option>
+                                
+                                    <option value="Abinandhan Ramanujam">Abinandhan Ramanujam</option>
+                                
+                                    <option value="Cinematography">Cinematography</option>
+                                
+                                    <option value="Chennai">Chennai</option>
+                                
+                                    <option value="Tamil Nadu">Tamil Nadu</option>
+                                
+                                    <option value="Abishek Raja">Abishek Raja</option>
+                                
+                                    <option value="Dialogues">Dialogues</option>
+                                
+                                    <option value="Imaikkaa Nodigal">Imaikkaa Nodigal</option>
+                                
+                                    <option value="Abrar Zahoor">Abrar Zahoor</option>
+                                
+                                    <option value="Janleva 555">Janleva 555</option>
+                                
+                                    <option value="Neerja">Neerja</option>
+                                
+                                    <option value="Delhi">Delhi</option>
+                                
+                                    <option value="Abu Malik">Abu Malik</option>
+                                
+                                    <option value="02 Nov 1960">02 Nov 1960</option>
+                                
+                                    <option value="Anu">Anu</option>
+                                
+                                    <option value="Dabboo Malik">Dabboo Malik</option>
+                                
+                                    <option value="Abyuktha Manikandan">Abyuktha Manikandan</option>
+                                
+                                    <option value="Goat">Goat</option>
+                                
+                                    <option value="Thalapathy Vijay">Thalapathy Vijay</option>
+                                
+                                    <option value="Anniyan">Anniyan</option>
+                                
+                                    <option value="Om Shanti Om">Om Shanti Om</option>
+                                
+                                    <option value="Brahmastra">Brahmastra</option>
+                                
+                                    <option value="2024">2024</option>
+                                
+                                    <option value="Achint Kaur">Achint Kaur</option>
+                                
+                                    <option value="Swabhimaan">Swabhimaan</option>
+                                
+                                    <option value="Hindi language">Hindi language</option>
+                                
+                                    <option value="1994">1994</option>
+                                
+                                    <option value="Zee TV">Zee TV</option>
+                                
+                                    <option value="1995">1995</option>
+                                
+                                    <option value="Achyuth Kumar">Achyuth Kumar</option>
+                                
+                                    <option value="08 Mar 1966">08 Mar 1966</option>
+                                
+                                    <option value="Tiptur, Karnataka">Tiptur, Karnataka</option>
+                                
+                                    <option value="AchyuthChaganti">AchyuthChaganti</option>
+                                
+                                    <option value="Tiptur">Tiptur</option>
+                                
+                                    <option value="Tumkur">Tumkur</option>
+                                
+                                    <option value="Filmfare Awards">Filmfare Awards</option>
+                                
+                                    <option value="Gruhabhanga">Gruhabhanga</option>
+                                
+                                    <option value="Girish Kasaravalli">Girish Kasaravalli</option>
+                                
+                                    <option value="Moggina Manasu">Moggina Manasu</option>
+                                
+                                    <option value="Aa Dinagalu">Aa Dinagalu</option>
+                                
+                                    <option value="Lucia">Lucia</option>
+                                
+                                    <option value="Sathish Ninasam">Sathish Ninasam</option>
+                                
+                                    <option value="Anant Nag">Anant Nag</option>
+                                
+                                    <option value="Adah Sharma">Adah Sharma</option>
+                                
+                                    <option value="11 May 1992">11 May 1992</option>
+                                
+                                    <option value="1920">1920</option>
+                                
+                                    <option value="Subramanyam For Sale">Subramanyam For Sale</option>
+                                
+                                    <option value="Adam Herschman">Adam Herschman</option>
+                                
+                                    <option value="Accepted">Accepted</option>
+                                
+                                    <option value="Adam Levine">Adam Levine</option>
+                                
+                                    <option value="18 Mar 1979">18 Mar 1979</option>
+                                
+                                    <option value="Adam Noah Levine">Adam Noah Levine</option>
+                                
+                                    <option value="March 18, 1979">March 18, 1979</option>
+                                
+                                    <option value="pop rock">pop rock</option>
+                                
+                                    <option value="Maroon 5">Maroon 5</option>
+                                
+                                    <option value="Adam Noah">Adam Noah</option>
+                                
+                                    <option value="Noah Levine">Noah Levine</option>
+                                
+                                    <option value="Adam Pasha">Adam Pasha</option>
+                                
+                                    <option value="Bangaluru">Bangaluru</option>
+                                
+                                    <option value="Bigg Boss Kannada Season 6">Bigg Boss Kannada Season 6</option>
+                                
+                                    <option value="17">17</option>
+                                
+                                    <option value="Adam Rodriguez">Adam Rodriguez</option>
+                                
+                                    <option value="02 Apr 1975">02 Apr 1975</option>
+                                
+                                    <option value="New York City, New York">New York City, New York</option>
+                                
+                                    <option value="US">US</option>
+                                
+                                    <option value="Keith Bulluck">Keith Bulluck</option>
+                                
+                                    <option value="Clarkstown High School North">Clarkstown High School North</option>
+                                
+                                    <option value="Tennessee Titans">Tennessee Titans</option>
+                                
+                                    <option value="If You Had My Love">If You Had My Love</option>
+                                
+                                    <option value="Jennifer Lopez">Jennifer Lopez</option>
+                                
+                                    <option value="I Call it Love">I Call it Love</option>
+                                
+                                    <option value="Lionel Richie">Lionel Richie</option>
+                                
+                                    <option value="Adam Rothenberg">Adam Rothenberg</option>
+                                
+                                    <option value="Mad Money (film)">Mad Money (film)</option>
+                                
+                                    <option value="Katie Holmes">Katie Holmes</option>
+                                
+                                    <option value="American">American</option>
+                                
+                                    <option value="The Jury">The Jury</option>
+                                
+                                    <option value="Damages">Damages</option>
+                                
+                                    <option value="Law & Order">Law & Order</option>
+                                
+                                    <option value="The Ex List">The Ex List</option>
+                                
+                                    <option value="Adam Sandler">Adam Sandler</option>
+                                
+                                    <option value="09 Sep 1966">09 Sep 1966</option>
+                                
+                                    <option value="Brooklyn, New York">Brooklyn, New York</option>
+                                
+                                    <option value="Billy Madison">Billy Madison</option>
+                                
+                                    <option value="Happy Gilmore">Happy Gilmore</option>
+                                
+                                    <option value="Big Daddy">Big Daddy</option>
+                                
+                                    <option value="The Wedding Singer">The Wedding Singer</option>
+                                
+                                    <option value="Punch-Drunk Love">Punch-Drunk Love</option>
+                                
+                                    <option value="Spanglish">Spanglish</option>
+                                
+                                    <option value="Reign Over Me">Reign Over Me</option>
+                                
+                                    <option value="Manchester Central High School">Manchester Central High School</option>
+                                
+                                    <option value="Manchester, New Hampshire">Manchester, New Hampshire</option>
+                                
+                                    <option value="Click">Click</option>
+                                
+                                    <option value="New Hampshire">New Hampshire</option>
+                                
+                                    <option value="Lake Winnipesaukee">Lake Winnipesaukee</option>
+                                
+                                    <option value="Stanley Sandler">Stanley Sandler</option>
+                                
+                                    <option value="Theo Huxtable">Theo Huxtable</option>
+                                
+                                    <option value="The Cosby Show">The Cosby Show</option>
+                                
+                                    <option value="Saturday Night Live">Saturday Night Live</option>
+                                
+                                    <option value="Lorne Michaels">Lorne Michaels</option>
+                                
+                                    <option value="Going Overboard">Going Overboard</option>
+                                
+                                    <option value="1989">1989</option>
+                                
+                                    <option value="The Waterboy">The Waterboy</option>
+                                
+                                    <option value="comedy">comedy</option>
+                                
+                                    <option value="comedy/thriller">comedy/thriller</option>
+                                
+                                    <option value="slapstick humour">slapstick humour</option>
+                                
+                                    <option value="Collateral">Collateral</option>
+                                
+                                    <option value="Jamie Foxx">Jamie Foxx</option>
+                                
+                                    <option value="Willy Wonka">Willy Wonka</option>
+                                
+                                    <option value="Charlie and the Chocolate Factory">Charlie and the Chocolate Factory</option>
+                                
+                                    <option value="Tim Burton">Tim Burton</option>
+                                
+                                    <option value="I Now Pronounce You Chuck and Larry">I Now Pronounce You Chuck and Larry</option>
+                                
+                                    <option value="Kevin James">Kevin James</option>
+                                
+                                    <option value="The 40-Year-Old Virgin">The 40-Year-Old Virgin</option>
+                                
+                                    <option value="Judd Apatow">Judd Apatow</option>
+                                
+                                    <option value="Bedtime Stories">Bedtime Stories</option>
+                                
+                                    <option value="fantasy film">fantasy film</option>
+                                
+                                    <option value="Adam Shankman">Adam Shankman</option>
+                                
+                                    <option value="Bringing Down the House">Bringing Down the House</option>
+                                
+                                    <option value="Dennis Dugan">Dennis Dugan</option>
+                                
+                                    <option value="Inglourious Basterds">Inglourious Basterds</option>
+                                
+                                    <option value="Quentin Tarantino">Quentin Tarantino</option>
+                                
+                                    <option value="Sadie Madison Sandler">Sadie Madison Sandler</option>
+                                
+                                    <option value="May 6, 2006">May 6, 2006</option>
+                                
+                                    <option value="Happy Madison">Happy Madison</option>
+                                
+                                    <option value="Sunny Madeline Sandler">Sunny Madeline Sandler</option>
+                                
+                                    <option value="Adarsh Balakrishna">Adarsh Balakrishna</option>
+                                
+                                    <option value="10 Feb 1984">10 Feb 1984</option>
+                                
+                                    <option value="Bangalore, Karnatak">Bangalore, Karnatak</option>
+                                
+                                    <option value="AadarshBKrishna">AadarshBKrishna</option>
+                                
+                                    <option value="Nizam College">Nizam College</option>
+                                
+                                    <option value="cricket">cricket</option>
+                                
+                                    <option value="Osmania University">Osmania University</option>
+                                
+                                    <option value="Hyderabad">Hyderabad</option>
+                                
+                                    <option value="Shreyas Talpade">Shreyas Talpade</option>
+                                
+                                    <option value="Nagesh Kukunoor">Nagesh Kukunoor</option>
+                                
+                                    <option value="Iqbal">Iqbal</option>
+                                
+                                    <option value="Mukta Searchlight Films">Mukta Searchlight Films</option>
+                                
+                                    <option value="Happy Days">Happy Days</option>
+                                
+                                    <option value="Sekhar Kammula">Sekhar Kammula</option>
+                                
+                                    <option value="Vinayakudu">Vinayakudu</option>
+                                
+                                    <option value="Sai Kiran Avidi">Sai Kiran Avidi</option>
+                                
+                                    <option value="Ride">Ride</option>
+                                
+                                    <option value="Ramesh Varma">Ramesh Varma</option>
+                                
+                                    <option value="Govindudu Andarivadele">Govindudu Andarivadele</option>
+                                
+                                    <option value="Krishna Vamsi">Krishna Vamsi</option>
+                                
+                                    <option value="Ram Charan">Ram Charan</option>
+                                
+                                    <option value="Nooru Janmaku">Nooru Janmaku</option>
+                                
+                                    <option value="Nagathihalli Chandrashekhar">Nagathihalli Chandrashekhar</option>
+                                
+                                    <option value="Adarsh H Eshwarappa">Adarsh H Eshwarappa</option>
+                                
+                                    <option value="Shuddhi">Shuddhi</option>
+                                
+                                    <option value="Ade">Ade</option>
+                                
+                                    <option value="Snatch">Snatch</option>
+                                
+                                    <option value="Crouch End">Crouch End</option>
+                                
+                                    <option value="British">British</option>
+                                
+                                    <option value="Tyrone">Tyrone</option>
+                                
+                                    <option value="Adele Romanski">Adele Romanski</option>
+                                
+                                    <option value="Hollywood">Hollywood</option>
+                                
+                            </select>
+                        </div>
+                        <div class="col-2 pb-2">
+                            <button type="button" class="btn btn-primary btn-block" onclick="neighbourhoodHighlight({nodes: []});">Reset Selection</button>
+                        </div>
+                    </div>
+                </div>
+            
+            
+            <div id="mynetwork" class="card-body"></div>
+        </div>
+
+        
+            <div id="loadingBar">
+              <div class="outerBorder">
+                <div id="text">0%</div>
+                <div id="border">
+                  <div id="bar"></div>
+                </div>
+              </div>
+            </div>
+        
+        
+
+        <script type="text/javascript">
+
+              // initialize global variables.
+              var edges;
+              var nodes;
+              var allNodes;
+              var allEdges;
+              var nodeColors;
+              var originalNodes;
+              var network;
+              var container;
+              var options, data;
+              var filter = {
+                  item : '',
+                  property : '',
+                  value : []
+              };
+
+              
+                  new TomSelect("#select-node",{
+                      create: false,
+                      sortField: {
+                          field: "text",
+                          direction: "asc"
+                      }
+                  });
+              
+
+              
+
+              // This method is responsible for drawing the graph, returns the drawn network
+              function drawGraph() {
+                  var container = document.getElementById('mynetwork');
+
+                  
+
+                  // parsing and collecting nodes and edges from the python
+                  nodes = new vis.DataSet([{"color": "lightblue", "id": "Abhijeet Bhattacharya", "label": "Abhijeet Bhattacharya", "shape": "dot", "size": 25}, {"color": "lightgreen", "id": "Singer", "label": "Singer", "shape": "dot", "size": 25}, {"color": "lightgreen", "id": "male", "label": "male", "shape": "dot", "size": 25}, {"color": "lightgreen", "id": "30 Oct 1958", "label": "30 Oct 1958", "shape": "dot", "size": 25}, {"color": "lightgreen", "id": "IN", "label": "IN", "shape": "dot", "size": 25}, {"color": "green", "id": "Kanpur", "label": "Kanpur", "shape": "dot", "size": 15}, {"color": "green", "id": "Kanpur (UP)", "label": "Kanpur (UP)", "shape": "dot", "size": 15}, {"color": "orange", "id": "Dev Anand", "label": "Dev Anand", "shape": "dot", "size": 15}, {"color": "green", "id": "son", "label": "son", "shape": "dot", "size": 15}, {"color": "green", "id": "1981", "label": "1981", "shape": "dot", "size": 15}, {"color": "green", "id": "Mumbai", "label": "Mumbai", "shape": "dot", "size": 15}, {"color": "orange", "id": "debut film", "label": "debut film", "shape": "dot", "size": 15}, {"color": "green", "id": "Kishore Kumar", "label": "Kishore Kumar", "shape": "dot", "size": 15}, {"color": "orange", "id": "Anand Aur Anand", "label": "Anand Aur Anand", "shape": "dot", "size": 15}, {"color": "orange", "id": "Tan tana tan tan tara", "label": "Tan tana tan tan tara", "shape": "dot", "size": 15}, {"color": "green", "id": "Judwaa", "label": "Judwaa", "shape": "dot", "size": 15}, {"color": "orange", "id": "Jhanjhriya", "label": "Jhanjhriya", "shape": "dot", "size": 15}, {"color": "green", "id": "Krishna", "label": "Krishna", "shape": "dot", "size": 15}, {"color": "orange", "id": "Tere Bina", "label": "Tere Bina", "shape": "dot", "size": 15}, {"color": "orange", "id": "Aashiqui", "label": "Aashiqui", "shape": "dot", "size": 15}, {"color": "green", "id": "pop", "label": "pop", "shape": "dot", "size": 15}, {"color": "green", "id": "Sumati Bhattacharya", "label": "Sumati Bhattacharya", "shape": "dot", "size": 15}, {"color": "lightblue", "id": "Abhijeet Sawant", "label": "Abhijeet Sawant", "shape": "dot", "size": 25}, {"color": "lightgreen", "id": "Actor", "label": "Actor", "shape": "dot", "size": 25}, {"color": "lightgreen", "id": "07 Oct 1981", "label": "07 Oct 1981", "shape": "dot", "size": 25}, {"color": "green", "id": "October 7, 1981", "label": "October 7, 1981", "shape": "dot", "size": 15}, {"color": "orange", "id": "Pop Idol", "label": "Pop Idol", "shape": "dot", "size": 15}, {"color": "green", "id": "UK", "label": "UK", "shape": "dot", "size": 15}, {"color": "orange", "id": "Aapka Abhijeet Sawant", "label": "Aapka Abhijeet Sawant", "shape": "dot", "size": 15}, {"color": "green", "id": "April 7, 2005", "label": "April 7, 2005", "shape": "dot", "size": 15}, {"color": "orange", "id": "Ashiq Banaya Aapne", "label": "Ashiq Banaya Aapne", "shape": "dot", "size": 15}, {"color": "green", "id": "Himesh Reshammiya", "label": "Himesh Reshammiya", "shape": "dot", "size": 15}, {"color": "orange", "id": "Everything I Do", "label": "Everything I Do", "shape": "dot", "size": 15}, {"color": "green", "id": "Brian Adams", "label": "Brian Adams", "shape": "dot", "size": 15}, {"color": "green", "id": "Shilpa", "label": "Shilpa", "shape": "dot", "size": 15}, {"color": "lightblue", "id": "Abhijit (Kannada Actor)", "label": "Abhijit (Kannada Actor)", "shape": "dot", "size": 25}, {"color": "lightgreen", "id": "Director", "label": "Director", "shape": "dot", "size": 25}, {"color": "lightgreen", "id": "Producer", "label": "Producer", "shape": "dot", "size": 25}, {"color": "lightgreen", "id": "30 Jul 1963", "label": "30 Jul 1963", "shape": "dot", "size": 25}, {"color": "lightgreen", "id": "Chellakere, Chitradurga district, Karnataka", "label": "Chellakere, Chitradurga district, Karnataka", "shape": "dot", "size": 25}, {"color": "green", "id": "30 July 1963", "label": "30 July 1963", "shape": "dot", "size": 15}, {"color": "orange", "id": "Ranjitha", "label": "Ranjitha", "shape": "dot", "size": 15}, {"color": "green", "id": "1993", "label": "1993", "shape": "dot", "size": 15}, {"color": "green", "id": "K. V Jayram", "label": "K. V Jayram", "shape": "dot", "size": 15}, {"color": "orange", "id": "College Hero", "label": "College Hero", "shape": "dot", "size": 15}, {"color": "orange", "id": "Jeevana Chaitra", "label": "Jeevana Chaitra", "shape": "dot", "size": 15}, {"color": "green", "id": "1991", "label": "1991", "shape": "dot", "size": 15}, {"color": "green", "id": "Rajkumar", "label": "Rajkumar", "shape": "dot", "size": 15}, {"color": "orange", "id": "Yejamana", "label": "Yejamana", "shape": "dot", "size": 15}, {"color": "green", "id": "1999", "label": "1999", "shape": "dot", "size": 15}, {"color": "green", "id": "Vishnuvardhan", "label": "Vishnuvardhan", "shape": "dot", "size": 15}, {"color": "green", "id": "Shashi Kumar", "label": "Shashi Kumar", "shape": "dot", "size": 15}, {"color": "orange", "id": "Jodi No. 1", "label": "Jodi No. 1", "shape": "dot", "size": 15}, {"color": "green", "id": "2009", "label": "2009", "shape": "dot", "size": 15}, {"color": "orange", "id": "Samara Simha Nayaka", "label": "Samara Simha Nayaka", "shape": "dot", "size": 15}, {"color": "orange", "id": "Aksharamaale", "label": "Aksharamaale", "shape": "dot", "size": 15}, {"color": "lightblue", "id": "Abhijit Sinha", "label": "Abhijit Sinha", "shape": "dot", "size": 25}, {"color": "lightgreen", "id": "25 Apr 1977", "label": "25 Apr 1977", "shape": "dot", "size": 25}, {"color": "green", "id": "25th April 1977", "label": "25th April 1977", "shape": "dot", "size": 15}, {"color": "green", "id": "Patna", "label": "Patna", "shape": "dot", "size": 15}, {"color": "green", "id": "Anamika Sinha", "label": "Anamika Sinha", "shape": "dot", "size": 15}, {"color": "green", "id": "Abhishek Sinha", "label": "Abhishek Sinha", "shape": "dot", "size": 15}, {"color": "green", "id": "New Delhi", "label": "New Delhi", "shape": "dot", "size": 15}, {"color": "green", "id": "Patna University", "label": "Patna University", "shape": "dot", "size": 15}, {"color": "orange", "id": "Farhan Akhter", "label": "Farhan Akhter", "shape": "dot", "size": 15}, {"color": "green", "id": "Anurag Kashyap", "label": "Anurag Kashyap", "shape": "dot", "size": 15}, {"color": "orange", "id": "Godrej Industries", "label": "Godrej Industries", "shape": "dot", "size": 15}, {"color": "green", "id": "Nagpur", "label": "Nagpur", "shape": "dot", "size": 15}, {"color": "orange", "id": "Reliance", "label": "Reliance", "shape": "dot", "size": 15}, {"color": "orange", "id": "Euphoria Films", "label": "Euphoria Films", "shape": "dot", "size": 15}, {"color": "green", "id": "2017", "label": "2017", "shape": "dot", "size": 15}, {"color": "orange", "id": "Ekjute Thatre", "label": "Ekjute Thatre", "shape": "dot", "size": 15}, {"color": "green", "id": "Nadira Babbar", "label": "Nadira Babbar", "shape": "dot", "size": 15}, {"color": "lightblue", "id": "Abhilash Joshiy", "label": "Abhilash Joshiy", "shape": "dot", "size": 25}, {"color": "orange", "id": "King Of Kotha", "label": "King Of Kotha", "shape": "dot", "size": 15}, {"color": "green", "id": "Dulquer Salmaan", "label": "Dulquer Salmaan", "shape": "dot", "size": 15}, {"color": "green", "id": "Aishwarya Lekshmi", "label": "Aishwarya Lekshmi", "shape": "dot", "size": 15}, {"color": "green", "id": "2023", "label": "2023", "shape": "dot", "size": 15}, {"color": "lightblue", "id": "Abhilash Pillai", "label": "Abhilash Pillai", "shape": "dot", "size": 25}, {"color": "lightgreen", "id": "Screenplay", "label": "Screenplay", "shape": "dot", "size": 25}, {"color": "lightgreen", "id": "Story", "label": "Story", "shape": "dot", "size": 25}, {"color": "lightgreen", "id": "17 May 1969", "label": "17 May 1969", "shape": "dot", "size": 25}, {"color": "green", "id": "May 17, 1969", "label": "May 17, 1969", "shape": "dot", "size": 15}, {"color": "green", "id": "Thiruvananthapuram", "label": "Thiruvananthapuram", "shape": "dot", "size": 15}, {"color": "green", "id": "Royal Academy of Dramatic Arts", "label": "Royal Academy of Dramatic Arts", "shape": "dot", "size": 15}, {"color": "orange", "id": "Abhinaya Theatre and Research Institute", "label": "Abhinaya Theatre and Research Institute", "shape": "dot", "size": 15}, {"color": "green", "id": "Trivandrum", "label": "Trivandrum", "shape": "dot", "size": 15}, {"color": "green", "id": "National School of Drama", "label": "National School of Drama", "shape": "dot", "size": 15}, {"color": "orange", "id": "Pathaamvalavu", "label": "Pathaamvalavu", "shape": "dot", "size": 15}, {"color": "green", "id": "2022", "label": "2022", "shape": "dot", "size": 15}, {"color": "green", "id": "Indrajith Sukumaran", "label": "Indrajith Sukumaran", "shape": "dot", "size": 15}, {"color": "lightblue", "id": "Abhimann Roy", "label": "Abhimann Roy", "shape": "dot", "size": 25}, {"color": "lightgreen", "id": "Music Director", "label": "Music Director", "shape": "dot", "size": 25}, {"color": "lightgreen", "id": "Lyricst", "label": "Lyricst", "shape": "dot", "size": 25}, {"color": "lightgreen", "id": "female", "label": "female", "shape": "dot", "size": 25}, {"color": "lightgreen", "id": "16 Feb 1979", "label": "16 Feb 1979", "shape": "dot", "size": 25}, {"color": "green", "id": "2001", "label": "2001", "shape": "dot", "size": 15}, {"color": "orange", "id": "Kullralokaand", "label": "Kullralokaand", "shape": "dot", "size": 15}, {"color": "lightblue", "id": "Abhimanyu Dassani", "label": "Abhimanyu Dassani", "shape": "dot", "size": 25}, {"color": "green", "id": "Bhagyashree", "label": "Bhagyashree", "shape": "dot", "size": 15}, {"color": "lightblue", "id": "Abhimanyu Kashinath", "label": "Abhimanyu Kashinath", "shape": "dot", "size": 25}, {"color": "orange", "id": "Alok Kashinath", "label": "Alok Kashinath", "shape": "dot", "size": 15}, {"color": "orange", "id": "Baaji", "label": "Baaji", "shape": "dot", "size": 15}, {"color": "green", "id": "S Shidlaghatta Srinivas", "label": "S Shidlaghatta Srinivas", "shape": "dot", "size": 15}, {"color": "lightblue", "id": "Abhinav Kashyap", "label": "Abhinav Kashyap", "shape": "dot", "size": 25}, {"color": "lightgreen", "id": "Gorakhpur, Uttar Pradesh", "label": "Gorakhpur, Uttar Pradesh", "shape": "dot", "size": 25}, {"color": "orange", "id": "Dabangg", "label": "Dabangg", "shape": "dot", "size": 15}, {"color": "green", "id": "2010", "label": "2010", "shape": "dot", "size": 15}, {"color": "green", "id": "Salman Khan", "label": "Salman Khan", "shape": "dot", "size": 15}, {"color": "green", "id": "Sonakshi Sinha", "label": "Sonakshi Sinha", "shape": "dot", "size": 15}, {"color": "orange", "id": "Jung", "label": "Jung", "shape": "dot", "size": 15}, {"color": "green", "id": "2000", "label": "2000", "shape": "dot", "size": 15}, {"color": "lightblue", "id": "Abhinav Shukla", "label": "Abhinav Shukla", "shape": "dot", "size": 25}, {"color": "lightgreen", "id": "27 Sep 1982", "label": "27 Sep 1982", "shape": "dot", "size": 25}, {"color": "lightgreen", "id": "Ludhiana, Punjab", "label": "Ludhiana, Punjab", "shape": "dot", "size": 25}, {"color": "orange", "id": "Bigg Boss season 14", "label": "Bigg Boss season 14", "shape": "dot", "size": 15}, {"color": "lightblue", "id": "Abhinay Vaddi", "label": "Abhinay Vaddi", "shape": "dot", "size": 25}, {"color": "lightgreen", "id": "18 Mar 1983", "label": "18 Mar 1983", "shape": "dot", "size": 25}, {"color": "orange", "id": "Ramanujan", "label": "Ramanujan", "shape": "dot", "size": 15}, {"color": "orange", "id": "Bigg Boss Tamil season 5", "label": "Bigg Boss Tamil season 5", "shape": "dot", "size": 15}, {"color": "green", "id": "Star Vij", "label": "Star Vij", "shape": "dot", "size": 15}, {"color": "orange", "id": "Chennai 60028 Part 2", "label": "Chennai 60028 Part 2", "shape": "dot", "size": 15}, {"color": "green", "id": "Venkat Prabhu", "label": "Venkat Prabhu", "shape": "dot", "size": 15}, {"color": "green", "id": "Kamal Haasan", "label": "Kamal Haasan", "shape": "dot", "size": 15}, {"color": "lightblue", "id": "Abhinaya", "label": "Abhinaya", "shape": "dot", "size": 25}, {"color": "lightgreen", "id": "Actress", "label": "Actress", "shape": "dot", "size": 25}, {"color": "lightgreen", "id": "13 Nov 1991", "label": "13 Nov 1991", "shape": "dot", "size": 25}, {"color": "lightgreen", "id": "Rajahmundry, Andhra Pradesh", "label": "Rajahmundry, Andhra Pradesh", "shape": "dot", "size": 25}, {"color": "lightgreen", "id": "mgabhinaya", "label": "mgabhinaya", "shape": "dot", "size": 25}, {"color": "green", "id": "November 13, 1991", "label": "November 13, 1991", "shape": "dot", "size": 15}, {"color": "orange", "id": "Naadodigal", "label": "Naadodigal", "shape": "dot", "size": 15}, {"color": "orange", "id": "7aam Arivu", "label": "7aam Arivu", "shape": "dot", "size": 15}, {"color": "green", "id": "Suriya", "label": "Suriya", "shape": "dot", "size": 15}, {"color": "green", "id": "2011", "label": "2011", "shape": "dot", "size": 15}, {"color": "orange", "id": "Easan", "label": "Easan", "shape": "dot", "size": 15}, {"color": "green", "id": "Sasikumar", "label": "Sasikumar", "shape": "dot", "size": 15}, {"color": "orange", "id": "Dammu", "label": "Dammu", "shape": "dot", "size": 15}, {"color": "green", "id": "NTR", "label": "NTR", "shape": "dot", "size": 15}, {"color": "orange", "id": "Dhamarukam", "label": "Dhamarukam", "shape": "dot", "size": 15}, {"color": "orange", "id": "Genius", "label": "Genius", "shape": "dot", "size": 15}, {"color": "lightblue", "id": "Abhinaya (Old Kannada Actress)", "label": "Abhinaya (Old Kannada Actress)", "shape": "dot", "size": 25}, {"color": "green", "id": "1984", "label": "1984", "shape": "dot", "size": 15}, {"color": "orange", "id": "Anubhava", "label": "Anubhava", "shape": "dot", "size": 15}, {"color": "green", "id": "Kashinath", "label": "Kashinath", "shape": "dot", "size": 15}, {"color": "lightblue", "id": "Abhinaya Sri", "label": "Abhinaya Sri", "shape": "dot", "size": 25}, {"color": "lightgreen", "id": "25 Mar 1988", "label": "25 Mar 1988", "shape": "dot", "size": 25}, {"color": "lightgreen", "id": "Chennai, Tamil Nadu", "label": "Chennai, Tamil Nadu", "shape": "dot", "size": 25}, {"color": "orange", "id": "Arya", "label": "Arya", "shape": "dot", "size": 15}, {"color": "orange", "id": "Kariya", "label": "Kariya", "shape": "dot", "size": 15}, {"color": "green", "id": "Darshan", "label": "Darshan", "shape": "dot", "size": 15}, {"color": "lightblue", "id": "Abhirami", "label": "Abhirami", "shape": "dot", "size": 25}, {"color": "lightgreen", "id": "26 Jul 1983", "label": "26 Jul 1983", "shape": "dot", "size": 25}, {"color": "green", "id": "Mar Ivanios College", "label": "Mar Ivanios College", "shape": "dot", "size": 15}, {"color": "lightblue", "id": "Abhirami Venkatachalam", "label": "Abhirami Venkatachalam", "shape": "dot", "size": 25}, {"color": "lightgreen", "id": "09 Mar 0", "label": "09 Mar 0", "shape": "dot", "size": 25}, {"color": "lightgreen", "id": "Chennai, Tamil Nadu.", "label": "Chennai, Tamil Nadu.", "shape": "dot", "size": 25}, {"color": "orange", "id": "Kalavu", "label": "Kalavu", "shape": "dot", "size": 15}, {"color": "green", "id": "2019", "label": "2019", "shape": "dot", "size": 15}, {"color": "green", "id": "Murali Karthick", "label": "Murali Karthick", "shape": "dot", "size": 15}, {"color": "lightblue", "id": "Abhishek (Telugu Actor)", "label": "Abhishek (Telugu Actor)", "shape": "dot", "size": 25}, {"color": "orange", "id": "Aithe", "label": "Aithe", "shape": "dot", "size": 15}, {"color": "green", "id": "Chandrasekhar Yeleti", "label": "Chandrasekhar Yeleti", "shape": "dot", "size": 15}, {"color": "green", "id": "2003", "label": "2003", "shape": "dot", "size": 15}, {"color": "lightblue", "id": "Abhishek Ambareesh", "label": "Abhishek Ambareesh", "shape": "dot", "size": 25}, {"color": "lightgreen", "id": "03 Oct 1993", "label": "03 Oct 1993", "shape": "dot", "size": 25}, {"color": "lightgreen", "id": "Bengaluru, Karnataka", "label": "Bengaluru, Karnataka", "shape": "dot", "size": 25}, {"color": "orange", "id": "Amar", "label": "Amar", "shape": "dot", "size": 15}, {"color": "orange", "id": "Bad Manners", "label": "Bad Manners", "shape": "dot", "size": 15}, {"color": "green", "id": "Duniya Suri", "label": "Duniya Suri", "shape": "dot", "size": 15}, {"color": "orange", "id": "Kali", "label": "Kali", "shape": "dot", "size": 15}, {"color": "lightblue", "id": "Abhishek Bachchan", "label": "Abhishek Bachchan", "shape": "dot", "size": 25}, {"color": "lightgreen", "id": "05 Feb 1976", "label": "05 Feb 1976", "shape": "dot", "size": 25}, {"color": "lightgreen", "id": "Mumbai, Maharashtra", "label": "Mumbai, Maharashtra", "shape": "dot", "size": 25}, {"color": "lightgreen", "id": "@juniorbachchan", "label": "@juniorbachchan", "shape": "dot", "size": 25}, {"color": "green", "id": "Jaya Bachchan", "label": "Jaya Bachchan", "shape": "dot", "size": 15}, {"color": "green", "id": "Amitabh Bachchan", "label": "Amitabh Bachchan", "shape": "dot", "size": 15}, {"color": "green", "id": "2002", "label": "2002", "shape": "dot", "size": 15}, {"color": "green", "id": "Shweta Bachchan-Nanda", "label": "Shweta Bachchan-Nanda", "shape": "dot", "size": 15}, {"color": "green", "id": "Shweta Bach", "label": "Shweta Bach", "shape": "dot", "size": 15}, {"color": "green", "id": "Aishwary Rai", "label": "Aishwary Rai", "shape": "dot", "size": 15}, {"color": "green", "id": "2004", "label": "2004", "shape": "dot", "size": 15}, {"color": "orange", "id": "Dhoom", "label": "Dhoom", "shape": "dot", "size": 15}, {"color": "orange", "id": "Bunty aur Babli", "label": "Bunty aur Babli", "shape": "dot", "size": 15}, {"color": "green", "id": "2005", "label": "2005", "shape": "dot", "size": 15}, {"color": "orange", "id": "Sarkar", "label": "Sarkar", "shape": "dot", "size": 15}, {"color": "orange", "id": "Dus", "label": "Dus", "shape": "dot", "size": 15}, {"color": "orange", "id": "Bluffmaster", "label": "Bluffmaster", "shape": "dot", "size": 15}, {"color": "green", "id": "2006", "label": "2006", "shape": "dot", "size": 15}, {"color": "orange", "id": "Guru", "label": "Guru", "shape": "dot", "size": 15}, {"color": "green", "id": "2007", "label": "2007", "shape": "dot", "size": 15}, {"color": "orange", "id": "Paa", "label": "Paa", "shape": "dot", "size": 15}, {"color": "orange", "id": "Kabhi Alvida Naa Kehena", "label": "Kabhi Alvida Naa Kehena", "shape": "dot", "size": 15}, {"color": "orange", "id": "Raavan", "label": "Raavan", "shape": "dot", "size": 15}, {"color": "green", "id": "Aishwarya Rai Bachchan", "label": "Aishwarya Rai Bachchan", "shape": "dot", "size": 15}, {"color": "orange", "id": "Dhoom-3", "label": "Dhoom-3", "shape": "dot", "size": 15}, {"color": "green", "id": "2013", "label": "2013", "shape": "dot", "size": 15}, {"color": "green", "id": "Vijay Krishna Acharya", "label": "Vijay Krishna Acharya", "shape": "dot", "size": 15}, {"color": "lightblue", "id": "Abhishek Bannerjee", "label": "Abhishek Bannerjee", "shape": "dot", "size": 25}, {"color": "lightgreen", "id": "05 May 1985", "label": "05 May 1985", "shape": "dot", "size": 25}, {"color": "lightgreen", "id": "Kharagpur, West Bengal", "label": "Kharagpur, West Bengal", "shape": "dot", "size": 25}, {"color": "green", "id": "May 5, 1985", "label": "May 5, 1985", "shape": "dot", "size": 15}, {"color": "orange", "id": "The Dirty Picture", "label": "The Dirty Picture", "shape": "dot", "size": 15}, {"color": "orange", "id": "Stree", "label": "Stree", "shape": "dot", "size": 15}, {"color": "green", "id": "horror", "label": "horror", "shape": "dot", "size": 15}, {"color": "orange", "id": "Mirzapur", "label": "Mirzapur", "shape": "dot", "size": 15}, {"color": "orange", "id": "Rang De Basanti", "label": "Rang De Basanti", "shape": "dot", "size": 15}, {"color": "lightblue", "id": "Abhishek Das", "label": "Abhishek Das", "shape": "dot", "size": 25}, {"color": "orange", "id": "Gattimela", "label": "Gattimela", "shape": "dot", "size": 15}, {"color": "lightblue", "id": "Abhishek Jayadeep", "label": "Abhishek Jayadeep", "shape": "dot", "size": 25}, {"color": "lightgreen", "id": "Thrissur, Kerala", "label": "Thrissur, Kerala", "shape": "dot", "size": 25}, {"color": "green", "id": "Pune", "label": "Pune", "shape": "dot", "size": 15}, {"color": "lightblue", "id": "Abhishek Kapoor", "label": "Abhishek Kapoor", "shape": "dot", "size": 25}, {"color": "orange", "id": "Uff!Yeh Mohabbat", "label": "Uff!Yeh Mohabbat", "shape": "dot", "size": 15}, {"color": "green", "id": "1996", "label": "1996", "shape": "dot", "size": 15}, {"color": "green", "id": "Twinkle Khanna", "label": "Twinkle Khanna", "shape": "dot", "size": 15}, {"color": "green", "id": "Vipin Handa", "label": "Vipin Handa", "shape": "dot", "size": 15}, {"color": "orange", "id": "Rock On", "label": "Rock On", "shape": "dot", "size": 15}, {"color": "green", "id": "2008", "label": "2008", "shape": "dot", "size": 15}, {"color": "green", "id": "Farhan Akhtar", "label": "Farhan Akhtar", "shape": "dot", "size": 15}, {"color": "orange", "id": "Aryan", "label": "Aryan", "shape": "dot", "size": 15}, {"color": "lightblue", "id": "Abhishek Kapur", "label": "Abhishek Kapur", "shape": "dot", "size": 25}, {"color": "orange", "id": "Kundali Bhagya", "label": "Kundali Bhagya", "shape": "dot", "size": 15}, {"color": "lightblue", "id": "Abhishek kumar", "label": "Abhishek kumar", "shape": "dot", "size": 25}, {"color": "lightgreen", "id": "Editing", "label": "Editing", "shape": "dot", "size": 25}, {"color": "orange", "id": "Indian Idol", "label": "Indian Idol", "shape": "dot", "size": 15}, {"color": "green", "id": "TV series", "label": "TV series", "shape": "dot", "size": 15}, {"color": "orange", "id": "\"Indian Idol\"", "label": "\"Indian Idol\"", "shape": "dot", "size": 15}, {"color": "orange", "id": "\"Indian Idol\" (2004)", "label": "\"Indian Idol\" (2004)", "shape": "dot", "size": 15}, {"color": "lightblue", "id": "Abhishek Kumar", "label": "Abhishek Kumar", "shape": "dot", "size": 25}, {"color": "lightgreen", "id": "26 Aug 1995", "label": "26 Aug 1995", "shape": "dot", "size": 25}, {"color": "lightgreen", "id": "Punjab", "label": "Punjab", "shape": "dot", "size": 25}, {"color": "orange", "id": "Udaariyaan", "label": "Udaariyaan", "shape": "dot", "size": 15}, {"color": "green", "id": "2018", "label": "2018", "shape": "dot", "size": 15}, {"color": "lightblue", "id": "Abhishek Malhan", "label": "Abhishek Malhan", "shape": "dot", "size": 25}, {"color": "lightgreen", "id": "24 May 1997", "label": "24 May 1997", "shape": "dot", "size": 25}, {"color": "lightgreen", "id": "Pitampura, Delhi", "label": "Pitampura, Delhi", "shape": "dot", "size": 25}, {"color": "orange", "id": "Bigg Boss OTT 2", "label": "Bigg Boss OTT 2", "shape": "dot", "size": 15}, {"color": "lightblue", "id": "Abhishek Sreekumar", "label": "Abhishek Sreekumar", "shape": "dot", "size": 25}, {"color": "green", "id": "Kerala", "label": "Kerala", "shape": "dot", "size": 15}, {"color": "green", "id": "Bigg Boss Malayalam Season 6", "label": "Bigg Boss Malayalam Season 6", "shape": "dot", "size": 15}, {"color": "lightblue", "id": "Abi", "label": "Abi", "shape": "dot", "size": 25}, {"color": "green", "id": "Shane Nigam", "label": "Shane Nigam", "shape": "dot", "size": 15}, {"color": "lightblue", "id": "Abi Saravanan", "label": "Abi Saravanan", "shape": "dot", "size": 25}, {"color": "orange", "id": "Saahasam", "label": "Saahasam", "shape": "dot", "size": 15}, {"color": "orange", "id": "Touring Talkies", "label": "Touring Talkies", "shape": "dot", "size": 15}, {"color": "lightblue", "id": "Abijeeth Duddala", "label": "Abijeeth Duddala", "shape": "dot", "size": 25}, {"color": "lightgreen", "id": "11 Oct 1988", "label": "11 Oct 1988", "shape": "dot", "size": 25}, {"color": "lightgreen", "id": "Hyderabad, Andhra Pradesh", "label": "Hyderabad, Andhra Pradesh", "shape": "dot", "size": 25}, {"color": "orange", "id": "Bigg Boss 4", "label": "Bigg Boss 4", "shape": "dot", "size": 15}, {"color": "green", "id": "Big Brother", "label": "Big Brother", "shape": "dot", "size": 15}, {"color": "lightblue", "id": "Abinandhan Ramanujam", "label": "Abinandhan Ramanujam", "shape": "dot", "size": 25}, {"color": "lightgreen", "id": "Cinematography", "label": "Cinematography", "shape": "dot", "size": 25}, {"color": "orange", "id": "Chennai", "label": "Chennai", "shape": "dot", "size": 15}, {"color": "green", "id": "Tamil Nadu", "label": "Tamil Nadu", "shape": "dot", "size": 15}, {"color": "lightblue", "id": "Abishek Raja", "label": "Abishek Raja", "shape": "dot", "size": 25}, {"color": "lightgreen", "id": "Dialogues", "label": "Dialogues", "shape": "dot", "size": 25}, {"color": "orange", "id": "Imaikkaa Nodigal", "label": "Imaikkaa Nodigal", "shape": "dot", "size": 15}, {"color": "lightblue", "id": "Abrar Zahoor", "label": "Abrar Zahoor", "shape": "dot", "size": 25}, {"color": "orange", "id": "Janleva 555", "label": "Janleva 555", "shape": "dot", "size": 15}, {"color": "orange", "id": "Neerja", "label": "Neerja", "shape": "dot", "size": 15}, {"color": "green", "id": "Delhi", "label": "Delhi", "shape": "dot", "size": 15}, {"color": "lightblue", "id": "Abu Malik", "label": "Abu Malik", "shape": "dot", "size": 25}, {"color": "lightgreen", "id": "02 Nov 1960", "label": "02 Nov 1960", "shape": "dot", "size": 25}, {"color": "green", "id": "Anu", "label": "Anu", "shape": "dot", "size": 15}, {"color": "green", "id": "Dabboo Malik", "label": "Dabboo Malik", "shape": "dot", "size": 15}, {"color": "lightblue", "id": "Abyuktha Manikandan", "label": "Abyuktha Manikandan", "shape": "dot", "size": 25}, {"color": "orange", "id": "Goat", "label": "Goat", "shape": "dot", "size": 15}, {"color": "green", "id": "Thalapathy Vijay", "label": "Thalapathy Vijay", "shape": "dot", "size": 15}, {"color": "orange", "id": "Anniyan", "label": "Anniyan", "shape": "dot", "size": 15}, {"color": "orange", "id": "Om Shanti Om", "label": "Om Shanti Om", "shape": "dot", "size": 15}, {"color": "orange", "id": "Brahmastra", "label": "Brahmastra", "shape": "dot", "size": 15}, {"color": "green", "id": "2024", "label": "2024", "shape": "dot", "size": 15}, {"color": "lightblue", "id": "Achint Kaur", "label": "Achint Kaur", "shape": "dot", "size": 25}, {"color": "orange", "id": "Swabhimaan", "label": "Swabhimaan", "shape": "dot", "size": 15}, {"color": "green", "id": "Hindi language", "label": "Hindi language", "shape": "dot", "size": 15}, {"color": "green", "id": "1994", "label": "1994", "shape": "dot", "size": 15}, {"color": "green", "id": "Zee TV", "label": "Zee TV", "shape": "dot", "size": 15}, {"color": "green", "id": "1995", "label": "1995", "shape": "dot", "size": 15}, {"color": "lightblue", "id": "Achyuth Kumar", "label": "Achyuth Kumar", "shape": "dot", "size": 25}, {"color": "lightgreen", "id": "08 Mar 1966", "label": "08 Mar 1966", "shape": "dot", "size": 25}, {"color": "lightgreen", "id": "Tiptur, Karnataka", "label": "Tiptur, Karnataka", "shape": "dot", "size": 25}, {"color": "lightgreen", "id": "AchyuthChaganti", "label": "AchyuthChaganti", "shape": "dot", "size": 25}, {"color": "orange", "id": "Tiptur", "label": "Tiptur", "shape": "dot", "size": 15}, {"color": "green", "id": "Tumkur", "label": "Tumkur", "shape": "dot", "size": 15}, {"color": "green", "id": "Filmfare Awards", "label": "Filmfare Awards", "shape": "dot", "size": 15}, {"color": "orange", "id": "Gruhabhanga", "label": "Gruhabhanga", "shape": "dot", "size": 15}, {"color": "green", "id": "Girish Kasaravalli", "label": "Girish Kasaravalli", "shape": "dot", "size": 15}, {"color": "orange", "id": "Moggina Manasu", "label": "Moggina Manasu", "shape": "dot", "size": 15}, {"color": "orange", "id": "Aa Dinagalu", "label": "Aa Dinagalu", "shape": "dot", "size": 15}, {"color": "orange", "id": "Lucia", "label": "Lucia", "shape": "dot", "size": 15}, {"color": "green", "id": "Sathish Ninasam", "label": "Sathish Ninasam", "shape": "dot", "size": 15}, {"color": "green", "id": "Anant Nag", "label": "Anant Nag", "shape": "dot", "size": 15}, {"color": "lightblue", "id": "Adah Sharma", "label": "Adah Sharma", "shape": "dot", "size": 25}, {"color": "lightgreen", "id": "11 May 1992", "label": "11 May 1992", "shape": "dot", "size": 25}, {"color": "orange", "id": "1920", "label": "1920", "shape": "dot", "size": 15}, {"color": "orange", "id": "Subramanyam For Sale", "label": "Subramanyam For Sale", "shape": "dot", "size": 15}, {"color": "lightblue", "id": "Adam Herschman", "label": "Adam Herschman", "shape": "dot", "size": 25}, {"color": "orange", "id": "Accepted", "label": "Accepted", "shape": "dot", "size": 15}, {"color": "lightblue", "id": "Adam Levine", "label": "Adam Levine", "shape": "dot", "size": 25}, {"color": "lightgreen", "id": "18 Mar 1979", "label": "18 Mar 1979", "shape": "dot", "size": 25}, {"color": "orange", "id": "Adam Noah Levine", "label": "Adam Noah Levine", "shape": "dot", "size": 15}, {"color": "green", "id": "March 18, 1979", "label": "March 18, 1979", "shape": "dot", "size": 15}, {"color": "green", "id": "pop rock", "label": "pop rock", "shape": "dot", "size": 15}, {"color": "green", "id": "Maroon 5", "label": "Maroon 5", "shape": "dot", "size": 15}, {"color": "orange", "id": "Adam Noah", "label": "Adam Noah", "shape": "dot", "size": 15}, {"color": "orange", "id": "Noah Levine", "label": "Noah Levine", "shape": "dot", "size": 15}, {"color": "lightblue", "id": "Adam Pasha", "label": "Adam Pasha", "shape": "dot", "size": 25}, {"color": "lightgreen", "id": "Bangaluru", "label": "Bangaluru", "shape": "dot", "size": 25}, {"color": "orange", "id": "Bigg Boss Kannada Season 6", "label": "Bigg Boss Kannada Season 6", "shape": "dot", "size": 15}, {"color": "green", "id": "17", "label": "17", "shape": "dot", "size": 15}, {"color": "lightblue", "id": "Adam Rodriguez", "label": "Adam Rodriguez", "shape": "dot", "size": 25}, {"color": "lightgreen", "id": "02 Apr 1975", "label": "02 Apr 1975", "shape": "dot", "size": 25}, {"color": "lightgreen", "id": "New York City, New York", "label": "New York City, New York", "shape": "dot", "size": 25}, {"color": "lightgreen", "id": "US", "label": "US", "shape": "dot", "size": 25}, {"color": "orange", "id": "Keith Bulluck", "label": "Keith Bulluck", "shape": "dot", "size": 15}, {"color": "green", "id": "Clarkstown High School North", "label": "Clarkstown High School North", "shape": "dot", "size": 15}, {"color": "green", "id": "Tennessee Titans", "label": "Tennessee Titans", "shape": "dot", "size": 15}, {"color": "orange", "id": "If You Had My Love", "label": "If You Had My Love", "shape": "dot", "size": 15}, {"color": "green", "id": "Jennifer Lopez", "label": "Jennifer Lopez", "shape": "dot", "size": 15}, {"color": "orange", "id": "I Call it Love", "label": "I Call it Love", "shape": "dot", "size": 15}, {"color": "green", "id": "Lionel Richie", "label": "Lionel Richie", "shape": "dot", "size": 15}, {"color": "lightblue", "id": "Adam Rothenberg", "label": "Adam Rothenberg", "shape": "dot", "size": 25}, {"color": "orange", "id": "Mad Money (film)", "label": "Mad Money (film)", "shape": "dot", "size": 15}, {"color": "green", "id": "Katie Holmes", "label": "Katie Holmes", "shape": "dot", "size": 15}, {"color": "green", "id": "American", "label": "American", "shape": "dot", "size": 15}, {"color": "orange", "id": "The Jury", "label": "The Jury", "shape": "dot", "size": 15}, {"color": "orange", "id": "Damages", "label": "Damages", "shape": "dot", "size": 15}, {"color": "orange", "id": "Law \u0026 Order", "label": "Law \u0026 Order", "shape": "dot", "size": 15}, {"color": "orange", "id": "The Ex List", "label": "The Ex List", "shape": "dot", "size": 15}, {"color": "lightblue", "id": "Adam Sandler", "label": "Adam Sandler", "shape": "dot", "size": 25}, {"color": "lightgreen", "id": "09 Sep 1966", "label": "09 Sep 1966", "shape": "dot", "size": 25}, {"color": "lightgreen", "id": "Brooklyn, New York", "label": "Brooklyn, New York", "shape": "dot", "size": 25}, {"color": "orange", "id": "Billy Madison", "label": "Billy Madison", "shape": "dot", "size": 15}, {"color": "orange", "id": "Happy Gilmore", "label": "Happy Gilmore", "shape": "dot", "size": 15}, {"color": "orange", "id": "Big Daddy", "label": "Big Daddy", "shape": "dot", "size": 15}, {"color": "orange", "id": "The Wedding Singer", "label": "The Wedding Singer", "shape": "dot", "size": 15}, {"color": "orange", "id": "Punch-Drunk Love", "label": "Punch-Drunk Love", "shape": "dot", "size": 15}, {"color": "orange", "id": "Spanglish", "label": "Spanglish", "shape": "dot", "size": 15}, {"color": "orange", "id": "Reign Over Me", "label": "Reign Over Me", "shape": "dot", "size": 15}, {"color": "orange", "id": "Manchester Central High School", "label": "Manchester Central High School", "shape": "dot", "size": 15}, {"color": "green", "id": "Manchester, New Hampshire", "label": "Manchester, New Hampshire", "shape": "dot", "size": 15}, {"color": "orange", "id": "Click", "label": "Click", "shape": "dot", "size": 15}, {"color": "green", "id": "New Hampshire", "label": "New Hampshire", "shape": "dot", "size": 15}, {"color": "orange", "id": "Lake Winnipesaukee", "label": "Lake Winnipesaukee", "shape": "dot", "size": 15}, {"color": "green", "id": "Stanley Sandler", "label": "Stanley Sandler", "shape": "dot", "size": 15}, {"color": "orange", "id": "Theo Huxtable", "label": "Theo Huxtable", "shape": "dot", "size": 15}, {"color": "green", "id": "The Cosby Show", "label": "The Cosby Show", "shape": "dot", "size": 15}, {"color": "orange", "id": "Saturday Night Live", "label": "Saturday Night Live", "shape": "dot", "size": 15}, {"color": "green", "id": "Lorne Michaels", "label": "Lorne Michaels", "shape": "dot", "size": 15}, {"color": "orange", "id": "Going Overboard", "label": "Going Overboard", "shape": "dot", "size": 15}, {"color": "green", "id": "1989", "label": "1989", "shape": "dot", "size": 15}, {"color": "orange", "id": "The Waterboy", "label": "The Waterboy", "shape": "dot", "size": 15}, {"color": "green", "id": "comedy", "label": "comedy", "shape": "dot", "size": 15}, {"color": "green", "id": "comedy/thriller", "label": "comedy/thriller", "shape": "dot", "size": 15}, {"color": "green", "id": "slapstick humour", "label": "slapstick humour", "shape": "dot", "size": 15}, {"color": "orange", "id": "Collateral", "label": "Collateral", "shape": "dot", "size": 15}, {"color": "green", "id": "Jamie Foxx", "label": "Jamie Foxx", "shape": "dot", "size": 15}, {"color": "orange", "id": "Willy Wonka", "label": "Willy Wonka", "shape": "dot", "size": 15}, {"color": "green", "id": "Charlie and the Chocolate Factory", "label": "Charlie and the Chocolate Factory", "shape": "dot", "size": 15}, {"color": "green", "id": "Tim Burton", "label": "Tim Burton", "shape": "dot", "size": 15}, {"color": "orange", "id": "I Now Pronounce You Chuck and Larry", "label": "I Now Pronounce You Chuck and Larry", "shape": "dot", "size": 15}, {"color": "green", "id": "Kevin James", "label": "Kevin James", "shape": "dot", "size": 15}, {"color": "orange", "id": "The 40-Year-Old Virgin", "label": "The 40-Year-Old Virgin", "shape": "dot", "size": 15}, {"color": "green", "id": "Judd Apatow", "label": "Judd Apatow", "shape": "dot", "size": 15}, {"color": "orange", "id": "Bedtime Stories", "label": "Bedtime Stories", "shape": "dot", "size": 15}, {"color": "green", "id": "fantasy film", "label": "fantasy film", "shape": "dot", "size": 15}, {"color": "green", "id": "Adam Shankman", "label": "Adam Shankman", "shape": "dot", "size": 15}, {"color": "orange", "id": "Bringing Down the House", "label": "Bringing Down the House", "shape": "dot", "size": 15}, {"color": "green", "id": "Dennis Dugan", "label": "Dennis Dugan", "shape": "dot", "size": 15}, {"color": "orange", "id": "Inglourious Basterds", "label": "Inglourious Basterds", "shape": "dot", "size": 15}, {"color": "green", "id": "Quentin Tarantino", "label": "Quentin Tarantino", "shape": "dot", "size": 15}, {"color": "orange", "id": "Sadie Madison Sandler", "label": "Sadie Madison Sandler", "shape": "dot", "size": 15}, {"color": "green", "id": "May 6, 2006", "label": "May 6, 2006", "shape": "dot", "size": 15}, {"color": "green", "id": "Happy Madison", "label": "Happy Madison", "shape": "dot", "size": 15}, {"color": "green", "id": "Sunny Madeline Sandler", "label": "Sunny Madeline Sandler", "shape": "dot", "size": 15}, {"color": "lightblue", "id": "Adarsh Balakrishna", "label": "Adarsh Balakrishna", "shape": "dot", "size": 25}, {"color": "lightgreen", "id": "10 Feb 1984", "label": "10 Feb 1984", "shape": "dot", "size": 25}, {"color": "lightgreen", "id": "Bangalore, Karnatak", "label": "Bangalore, Karnatak", "shape": "dot", "size": 25}, {"color": "lightgreen", "id": "AadarshBKrishna", "label": "AadarshBKrishna", "shape": "dot", "size": 25}, {"color": "green", "id": "Nizam College", "label": "Nizam College", "shape": "dot", "size": 15}, {"color": "green", "id": "cricket", "label": "cricket", "shape": "dot", "size": 15}, {"color": "orange", "id": "Osmania University", "label": "Osmania University", "shape": "dot", "size": 15}, {"color": "green", "id": "Hyderabad", "label": "Hyderabad", "shape": "dot", "size": 15}, {"color": "orange", "id": "Shreyas Talpade", "label": "Shreyas Talpade", "shape": "dot", "size": 15}, {"color": "orange", "id": "Nagesh Kukunoor", "label": "Nagesh Kukunoor", "shape": "dot", "size": 15}, {"color": "orange", "id": "Iqbal", "label": "Iqbal", "shape": "dot", "size": 15}, {"color": "green", "id": "Mukta Searchlight Films", "label": "Mukta Searchlight Films", "shape": "dot", "size": 15}, {"color": "orange", "id": "Happy Days", "label": "Happy Days", "shape": "dot", "size": 15}, {"color": "green", "id": "Sekhar Kammula", "label": "Sekhar Kammula", "shape": "dot", "size": 15}, {"color": "orange", "id": "Vinayakudu", "label": "Vinayakudu", "shape": "dot", "size": 15}, {"color": "green", "id": "Sai Kiran Avidi", "label": "Sai Kiran Avidi", "shape": "dot", "size": 15}, {"color": "orange", "id": "Ride", "label": "Ride", "shape": "dot", "size": 15}, {"color": "green", "id": "Ramesh Varma", "label": "Ramesh Varma", "shape": "dot", "size": 15}, {"color": "orange", "id": "Govindudu Andarivadele", "label": "Govindudu Andarivadele", "shape": "dot", "size": 15}, {"color": "green", "id": "Krishna Vamsi", "label": "Krishna Vamsi", "shape": "dot", "size": 15}, {"color": "green", "id": "Ram Charan", "label": "Ram Charan", "shape": "dot", "size": 15}, {"color": "orange", "id": "Nooru Janmaku", "label": "Nooru Janmaku", "shape": "dot", "size": 15}, {"color": "green", "id": "Nagathihalli Chandrashekhar", "label": "Nagathihalli Chandrashekhar", "shape": "dot", "size": 15}, {"color": "lightblue", "id": "Adarsh H Eshwarappa", "label": "Adarsh H Eshwarappa", "shape": "dot", "size": 25}, {"color": "orange", "id": "Shuddhi", "label": "Shuddhi", "shape": "dot", "size": 15}, {"color": "lightblue", "id": "Ade", "label": "Ade", "shape": "dot", "size": 25}, {"color": "orange", "id": "Snatch", "label": "Snatch", "shape": "dot", "size": 15}, {"color": "green", "id": "Crouch End", "label": "Crouch End", "shape": "dot", "size": 15}, {"color": "green", "id": "British", "label": "British", "shape": "dot", "size": 15}, {"color": "green", "id": "Tyrone", "label": "Tyrone", "shape": "dot", "size": 15}, {"color": "lightblue", "id": "Adele Romanski", "label": "Adele Romanski", "shape": "dot", "size": 25}, {"color": "green", "id": "Hollywood", "label": "Hollywood", "shape": "dot", "size": 15}]);
+                  edges = new vis.DataSet([{"from": "Abhijeet Bhattacharya", "title": "Role", "to": "Singer"}, {"from": "Abhijeet Bhattacharya", "title": "Gender", "to": "male"}, {"from": "Abhijeet Bhattacharya", "title": "DateOfBirth", "to": "30 Oct 1958"}, {"from": "Abhijeet Bhattacharya", "title": "Country", "to": "IN"}, {"from": "Abhijeet Bhattacharya", "title": "place of birth", "to": "Kanpur"}, {"from": "Abhijeet Bhattacharya", "title": "place of birth", "to": "Kanpur (UP)"}, {"from": "Dev Anand", "title": "child", "to": "son"}, {"from": "Abhijeet Bhattacharya", "title": "Independent_cluster_to_main_node", "to": "son"}, {"from": "Abhijeet Bhattacharya", "title": "Independent_cluster_to_main_node", "to": "Dev Anand"}, {"from": "Abhijeet Bhattacharya", "title": "work period (start)", "to": "1981"}, {"from": "Dev Anand", "title": "residence", "to": "Mumbai"}, {"from": "Abhijeet Bhattacharya", "title": "Independent_cluster_to_main_node", "to": "Mumbai"}, {"from": "debut film", "title": "cast member", "to": "Kishore Kumar"}, {"from": "Abhijeet Bhattacharya", "title": "Independent_cluster_to_main_node", "to": "Kishore Kumar"}, {"from": "Anand Aur Anand", "title": "director", "to": "Dev Anand"}, {"from": "Tan tana tan tan tara", "title": "part of", "to": "Judwaa"}, {"from": "Abhijeet Bhattacharya", "title": "Independent_cluster_to_main_node", "to": "Judwaa"}, {"from": "Jhanjhriya", "title": "performer", "to": "Krishna"}, {"from": "Abhijeet Bhattacharya", "title": "Independent_cluster_to_main_node", "to": "Krishna"}, {"from": "Tere Bina", "title": "performer", "to": "Abhijeet Bhattacharya"}, {"from": "Aashiqui", "title": "genre", "to": "pop"}, {"from": "Abhijeet Bhattacharya", "title": "Independent_cluster_to_main_node", "to": "pop"}, {"from": "Abhijeet Bhattacharya", "title": "spouse", "to": "Sumati Bhattacharya"}, {"from": "Abhijeet Sawant", "title": "Role", "to": "Singer"}, {"from": "Abhijeet Sawant", "title": "Role", "to": "Actor"}, {"from": "Abhijeet Sawant", "title": "Gender", "to": "male"}, {"from": "Abhijeet Sawant", "title": "DateOfBirth", "to": "07 Oct 1981"}, {"from": "Abhijeet Sawant", "title": "Place", "to": "Mumbai"}, {"from": "Abhijeet Sawant", "title": "Country", "to": "IN"}, {"from": "Abhijeet Sawant", "title": "date of birth", "to": "October 7, 1981"}, {"from": "Pop Idol", "title": "country of origin", "to": "UK"}, {"from": "Abhijeet Sawant", "title": "Independent_cluster_to_main_node", "to": "UK"}, {"from": "Aapka Abhijeet Sawant", "title": "publication date", "to": "April 7, 2005"}, {"from": "Abhijeet Sawant", "title": "Independent_cluster_to_main_node", "to": "April 7, 2005"}, {"from": "Aapka Abhijeet Sawant", "title": "performer", "to": "Abhijeet Sawant"}, {"from": "Ashiq Banaya Aapne", "title": "director", "to": "Himesh Reshammiya"}, {"from": "Abhijeet Sawant", "title": "Independent_cluster_to_main_node", "to": "Himesh Reshammiya"}, {"from": "Everything I Do", "title": "performer", "to": "Brian Adams"}, {"from": "Abhijeet Sawant", "title": "Independent_cluster_to_main_node", "to": "Brian Adams"}, {"from": "Abhijeet Sawant", "title": "spouse", "to": "Shilpa"}, {"from": "Abhijit (Kannada Actor)", "title": "Role", "to": "Actor"}, {"from": "Abhijit (Kannada Actor)", "title": "Role", "to": "Director"}, {"from": "Abhijit (Kannada Actor)", "title": "Role", "to": "Producer"}, {"from": "Abhijit (Kannada Actor)", "title": "Gender", "to": "male"}, {"from": "Abhijit (Kannada Actor)", "title": "DateOfBirth", "to": "30 Jul 1963"}, {"from": "Abhijit (Kannada Actor)", "title": "Place", "to": "Chellakere, Chitradurga district, Karnataka"}, {"from": "Abhijit (Kannada Actor)", "title": "Country", "to": "IN"}, {"from": "Abhijit (Kannada Actor)", "title": "date of birth", "to": "30 July 1963"}, {"from": "Ranjitha", "title": "publication date", "to": "1993"}, {"from": "Abhijit (Kannada Actor)", "title": "Independent_cluster_to_main_node", "to": "1993"}, {"from": "Ranjitha", "title": "director", "to": "K. V Jayram"}, {"from": "Abhijit (Kannada Actor)", "title": "Independent_cluster_to_main_node", "to": "K. V Jayram"}, {"from": "College Hero", "title": "cast member", "to": "Abhijit (Kannada Actor)"}, {"from": "Jeevana Chaitra", "title": "publication date", "to": "1991"}, {"from": "Abhijit (Kannada Actor)", "title": "Independent_cluster_to_main_node", "to": "1991"}, {"from": "Jeevana Chaitra", "title": "cast member", "to": "Rajkumar"}, {"from": "Abhijit (Kannada Actor)", "title": "Independent_cluster_to_main_node", "to": "Rajkumar"}, {"from": "Jeevana Chaitra", "title": "cast member", "to": "Abhijit (Kannada Actor)"}, {"from": "Yejamana", "title": "publication date", "to": "1999"}, {"from": "Abhijit (Kannada Actor)", "title": "Independent_cluster_to_main_node", "to": "1999"}, {"from": "Yejamana", "title": "cast member", "to": "Vishnuvardhan"}, {"from": "Abhijit (Kannada Actor)", "title": "Independent_cluster_to_main_node", "to": "Vishnuvardhan"}, {"from": "Yejamana", "title": "cast member", "to": "Shashi Kumar"}, {"from": "Abhijit (Kannada Actor)", "title": "Independent_cluster_to_main_node", "to": "Shashi Kumar"}, {"from": "Jodi No. 1", "title": "publication date", "to": "2009"}, {"from": "Abhijit (Kannada Actor)", "title": "Independent_cluster_to_main_node", "to": "2009"}, {"from": "Samara Simha Nayaka", "title": "publication date", "to": "2009"}, {"from": "Aksharamaale", "title": "presenter", "to": "Abhijit (Kannada Actor)"}, {"from": "Abhijit Sinha", "title": "Role", "to": "Actor"}, {"from": "Abhijit Sinha", "title": "Gender", "to": "male"}, {"from": "Abhijit Sinha", "title": "DateOfBirth", "to": "25 Apr 1977"}, {"from": "Abhijit Sinha", "title": "date of birth", "to": "25th April 1977"}, {"from": "Abhijit Sinha", "title": "place of birth", "to": "Patna"}, {"from": "Abhijit Sinha", "title": "sibling", "to": "Anamika Sinha"}, {"from": "Abhijit Sinha", "title": "sibling", "to": "Abhishek Sinha"}, {"from": "Anamika Sinha", "title": "residence", "to": "New Delhi"}, {"from": "Abhijit Sinha", "title": "Independent_cluster_to_main_node", "to": "New Delhi"}, {"from": "Abhijit Sinha", "title": "educated at", "to": "Patna University"}, {"from": "Farhan Akhter", "title": "influenced by", "to": "Anurag Kashyap"}, {"from": "Abhijit Sinha", "title": "Independent_cluster_to_main_node", "to": "Anurag Kashyap"}, {"from": "Godrej Industries", "title": "headquarters location", "to": "Mumbai"}, {"from": "Abhijit Sinha", "title": "Independent_cluster_to_main_node", "to": "Mumbai"}, {"from": "Abhijit Sinha", "title": "place of birth", "to": "Nagpur"}, {"from": "Reliance", "title": "location of formation", "to": "Mumbai"}, {"from": "Euphoria Films", "title": "inception", "to": "2017"}, {"from": "Abhijit Sinha", "title": "Independent_cluster_to_main_node", "to": "2017"}, {"from": "Ekjute Thatre", "title": "cast member", "to": "Nadira Babbar"}, {"from": "Abhijit Sinha", "title": "Independent_cluster_to_main_node", "to": "Nadira Babbar"}, {"from": "Abhilash Joshiy", "title": "Role", "to": "Director"}, {"from": "Abhilash Joshiy", "title": "Gender", "to": "male"}, {"from": "Abhilash Joshiy", "title": "father", "to": "Abhilash Joshiy"}, {"from": "King Of Kotha", "title": "cast member", "to": "Dulquer Salmaan"}, {"from": "Abhilash Joshiy", "title": "Independent_cluster_to_main_node", "to": "Dulquer Salmaan"}, {"from": "King Of Kotha", "title": "cast member", "to": "Aishwarya Lekshmi"}, {"from": "Abhilash Joshiy", "title": "Independent_cluster_to_main_node", "to": "Aishwarya Lekshmi"}, {"from": "King Of Kotha", "title": "publication date", "to": "2023"}, {"from": "Abhilash Joshiy", "title": "Independent_cluster_to_main_node", "to": "2023"}, {"from": "Abhilash Pillai", "title": "Role", "to": "Screenplay"}, {"from": "Abhilash Pillai", "title": "Role", "to": "Story"}, {"from": "Abhilash Pillai", "title": "Gender", "to": "male"}, {"from": "Abhilash Pillai", "title": "DateOfBirth", "to": "17 May 1969"}, {"from": "Abhilash Pillai", "title": "Country", "to": "IN"}, {"from": "Abhilash Pillai", "title": "date of birth", "to": "May 17, 1969"}, {"from": "Abhilash Pillai", "title": "place of birth", "to": "Thiruvananthapuram"}, {"from": "Abhilash Pillai", "title": "educated at", "to": "Royal Academy of Dramatic Arts"}, {"from": "Abhinaya Theatre and Research Institute", "title": "located in the administrative territorial entity", "to": "Trivandrum"}, {"from": "Abhilash Pillai", "title": "Independent_cluster_to_main_node", "to": "Trivandrum"}, {"from": "Abhilash Pillai", "title": "employer", "to": "National School of Drama"}, {"from": "Pathaamvalavu", "title": "publication date", "to": "2022"}, {"from": "Abhilash Pillai", "title": "Independent_cluster_to_main_node", "to": "2022"}, {"from": "Pathaamvalavu", "title": "cast member", "to": "Indrajith Sukumaran"}, {"from": "Abhilash Pillai", "title": "Independent_cluster_to_main_node", "to": "Indrajith Sukumaran"}, {"from": "Abhimann Roy", "title": "Role", "to": "Music Director"}, {"from": "Abhimann Roy", "title": "Role", "to": "Singer"}, {"from": "Abhimann Roy", "title": "Role", "to": "Lyricst"}, {"from": "Abhimann Roy", "title": "Gender", "to": "female"}, {"from": "Abhimann Roy", "title": "DateOfBirth", "to": "16 Feb 1979"}, {"from": "Abhimann Roy", "title": "Country", "to": "IN"}, {"from": "Abhimann Roy", "title": "work period (start)", "to": "2001"}, {"from": "Kullralokaand", "title": "composer", "to": "Abhimann Roy"}, {"from": "Kullralokaand", "title": "publication date", "to": "2001"}, {"from": "Abhimanyu Dassani", "title": "Role", "to": "Actor"}, {"from": "Abhimanyu Dassani", "title": "Gender", "to": "male"}, {"from": "Abhimanyu Dassani", "title": "Country", "to": "IN"}, {"from": "Abhimanyu Dassani", "title": "mother", "to": "Bhagyashree"}, {"from": "Abhimanyu Kashinath", "title": "Role", "to": "Actor"}, {"from": "Abhimanyu Kashinath", "title": "Gender", "to": "male"}, {"from": "Abhimanyu Kashinath", "title": "Country", "to": "IN"}, {"from": "Alok Kashinath", "title": "work period (start)", "to": "2009"}, {"from": "Abhimanyu Kashinath", "title": "Independent_cluster_to_main_node", "to": "2009"}, {"from": "Baaji", "title": "publication date", "to": "2009"}, {"from": "Baaji", "title": "director", "to": "S Shidlaghatta Srinivas"}, {"from": "Abhimanyu Kashinath", "title": "Independent_cluster_to_main_node", "to": "S Shidlaghatta Srinivas"}, {"from": "Baaji", "title": "cast member", "to": "Alok Kashinath"}, {"from": "Abhimanyu Kashinath", "title": "Independent_cluster_to_main_node", "to": "Alok Kashinath"}, {"from": "Abhinav Kashyap", "title": "Role", "to": "Director"}, {"from": "Abhinav Kashyap", "title": "Role", "to": "Singer"}, {"from": "Abhinav Kashyap", "title": "Gender", "to": "male"}, {"from": "Abhinav Kashyap", "title": "Place", "to": "Gorakhpur, Uttar Pradesh"}, {"from": "Abhinav Kashyap", "title": "Country", "to": "IN"}, {"from": "Dabangg", "title": "director", "to": "Abhinav Kashyap"}, {"from": "Dabangg", "title": "publication date", "to": "2010"}, {"from": "Abhinav Kashyap", "title": "Independent_cluster_to_main_node", "to": "2010"}, {"from": "Dabangg", "title": "cast member", "to": "Salman Khan"}, {"from": "Abhinav Kashyap", "title": "Independent_cluster_to_main_node", "to": "Salman Khan"}, {"from": "Dabangg", "title": "cast member", "to": "Sonakshi Sinha"}, {"from": "Abhinav Kashyap", "title": "Independent_cluster_to_main_node", "to": "Sonakshi Sinha"}, {"from": "Jung", "title": "publication date", "to": "2000"}, {"from": "Abhinav Kashyap", "title": "Independent_cluster_to_main_node", "to": "2000"}, {"from": "Abhinav Shukla", "title": "Role", "to": "Producer"}, {"from": "Abhinav Shukla", "title": "Gender", "to": "male"}, {"from": "Abhinav Shukla", "title": "DateOfBirth", "to": "27 Sep 1982"}, {"from": "Abhinav Shukla", "title": "Place", "to": "Ludhiana, Punjab"}, {"from": "Abhinav Shukla", "title": "Country", "to": "IN"}, {"from": "Bigg Boss season 14", "title": "presenter", "to": "Salman Khan"}, {"from": "Abhinav Shukla", "title": "Independent_cluster_to_main_node", "to": "Salman Khan"}, {"from": "Abhinav Shukla", "title": "country of citizenship", "to": "Abhinav Shukla"}, {"from": "Abhinay Vaddi", "title": "Role", "to": "Actor"}, {"from": "Abhinay Vaddi", "title": "Gender", "to": "male"}, {"from": "Abhinay Vaddi", "title": "DateOfBirth", "to": "18 Mar 1983"}, {"from": "Ramanujan", "title": "cast member", "to": "Abhinay Vaddi"}, {"from": "Bigg Boss Tamil season 5", "title": "original broadcaster", "to": "Star Vij"}, {"from": "Abhinay Vaddi", "title": "Independent_cluster_to_main_node", "to": "Star Vij"}, {"from": "Chennai 60028 Part 2", "title": "director", "to": "Venkat Prabhu"}, {"from": "Abhinay Vaddi", "title": "Independent_cluster_to_main_node", "to": "Venkat Prabhu"}, {"from": "Bigg Boss Tamil season 5", "title": "presenter", "to": "Kamal Haasan"}, {"from": "Abhinay Vaddi", "title": "Independent_cluster_to_main_node", "to": "Kamal Haasan"}, {"from": "Abhinaya", "title": "Role", "to": "Actress"}, {"from": "Abhinaya", "title": "Gender", "to": "female"}, {"from": "Abhinaya", "title": "DateOfBirth", "to": "13 Nov 1991"}, {"from": "Abhinaya", "title": "Place", "to": "Rajahmundry, Andhra Pradesh"}, {"from": "Abhinaya", "title": "Country", "to": "IN"}, {"from": "Abhinaya", "title": "TwitterID", "to": "mgabhinaya"}, {"from": "Abhinaya", "title": "date of birth", "to": "November 13, 1991"}, {"from": "Naadodigal", "title": "cast member", "to": "Abhinaya"}, {"from": "7aam Arivu", "title": "cast member", "to": "Suriya"}, {"from": "Abhinaya", "title": "Independent_cluster_to_main_node", "to": "Suriya"}, {"from": "7aam Arivu", "title": "publication date", "to": "2011"}, {"from": "Abhinaya", "title": "Independent_cluster_to_main_node", "to": "2011"}, {"from": "Easan", "title": "director", "to": "Sasikumar"}, {"from": "Abhinaya", "title": "Independent_cluster_to_main_node", "to": "Sasikumar"}, {"from": "Dammu", "title": "cast member", "to": "NTR"}, {"from": "Abhinaya", "title": "Independent_cluster_to_main_node", "to": "NTR"}, {"from": "Dhamarukam", "title": "cast member", "to": "NTR"}, {"from": "Genius", "title": "cast member", "to": "NTR"}, {"from": "Abhinaya (Old Kannada Actress)", "title": "Role", "to": "Actress"}, {"from": "Abhinaya (Old Kannada Actress)", "title": "Gender", "to": "female"}, {"from": "Abhinaya (Old Kannada Actress)", "title": "Country", "to": "IN"}, {"from": "Abhinaya (Old Kannada Actress)", "title": "work period (start)", "to": "1984"}, {"from": "Anubhava", "title": "cast member", "to": "Abhinaya (Old Kannada Actress)"}, {"from": "Anubhava", "title": "publication date", "to": "1984"}, {"from": "Anubhava", "title": "director", "to": "Kashinath"}, {"from": "Abhinaya (Old Kannada Actress)", "title": "Independent_cluster_to_main_node", "to": "Kashinath"}, {"from": "Abhinaya Sri", "title": "Role", "to": "Actress"}, {"from": "Abhinaya Sri", "title": "Gender", "to": "female"}, {"from": "Abhinaya Sri", "title": "DateOfBirth", "to": "25 Mar 1988"}, {"from": "Abhinaya Sri", "title": "Place", "to": "Chennai, Tamil Nadu"}, {"from": "Abhinaya Sri", "title": "Country", "to": "IN"}, {"from": "Arya", "title": "cast member", "to": "Abhinaya Sri"}, {"from": "Kariya", "title": "cast member", "to": "Abhinaya Sri"}, {"from": "Kariya", "title": "cast member", "to": "Darshan"}, {"from": "Abhinaya Sri", "title": "Independent_cluster_to_main_node", "to": "Darshan"}, {"from": "Abhirami", "title": "Role", "to": "Actress"}, {"from": "Abhirami", "title": "Role", "to": "Singer"}, {"from": "Abhirami", "title": "Gender", "to": "female"}, {"from": "Abhirami", "title": "DateOfBirth", "to": "26 Jul 1983"}, {"from": "Abhirami", "title": "Country", "to": "IN"}, {"from": "Abhirami", "title": "place of birth", "to": "Trivandrum"}, {"from": "Abhirami", "title": "educated at", "to": "Mar Ivanios College"}, {"from": "Abhirami Venkatachalam", "title": "Role", "to": "Actress"}, {"from": "Abhirami Venkatachalam", "title": "Gender", "to": "female"}, {"from": "Abhirami Venkatachalam", "title": "DateOfBirth", "to": "09 Mar 0"}, {"from": "Abhirami Venkatachalam", "title": "Place", "to": "Chennai, Tamil Nadu."}, {"from": "Abhirami Venkatachalam", "title": "Country", "to": "IN"}, {"from": "Kalavu", "title": "publication date", "to": "2019"}, {"from": "Abhirami Venkatachalam", "title": "Independent_cluster_to_main_node", "to": "2019"}, {"from": "Kalavu", "title": "director", "to": "Murali Karthick"}, {"from": "Abhirami Venkatachalam", "title": "Independent_cluster_to_main_node", "to": "Murali Karthick"}, {"from": "Kalavu", "title": "cast member", "to": "Abhirami Venkatachalam"}, {"from": "Abhishek (Telugu Actor)", "title": "Role", "to": "Actor"}, {"from": "Abhishek (Telugu Actor)", "title": "Gender", "to": "male"}, {"from": "Abhishek (Telugu Actor)", "title": "Country", "to": "IN"}, {"from": "Aithe", "title": "director", "to": "Chandrasekhar Yeleti"}, {"from": "Abhishek (Telugu Actor)", "title": "Independent_cluster_to_main_node", "to": "Chandrasekhar Yeleti"}, {"from": "Aithe", "title": "publication date", "to": "2003"}, {"from": "Abhishek (Telugu Actor)", "title": "Independent_cluster_to_main_node", "to": "2003"}, {"from": "Abhishek Ambareesh", "title": "Role", "to": "Actor"}, {"from": "Abhishek Ambareesh", "title": "Gender", "to": "male"}, {"from": "Abhishek Ambareesh", "title": "DateOfBirth", "to": "03 Oct 1993"}, {"from": "Abhishek Ambareesh", "title": "Place", "to": "Bengaluru, Karnataka"}, {"from": "Abhishek Ambareesh", "title": "Country", "to": "IN"}, {"from": "Abhishek Ambareesh", "title": "father", "to": "Abhishek Ambareesh"}, {"from": "Amar", "title": "cast member", "to": "Abhishek Ambareesh"}, {"from": "Amar", "title": "publication date", "to": "2019"}, {"from": "Abhishek Ambareesh", "title": "Independent_cluster_to_main_node", "to": "2019"}, {"from": "Bad Manners", "title": "cast member", "to": "Abhishek Ambareesh"}, {"from": "Bad Manners", "title": "director", "to": "Duniya Suri"}, {"from": "Abhishek Ambareesh", "title": "Independent_cluster_to_main_node", "to": "Duniya Suri"}, {"from": "Kali", "title": "cast member", "to": "Abhishek Ambareesh"}, {"from": "Abhishek Bachchan", "title": "Role", "to": "Actor"}, {"from": "Abhishek Bachchan", "title": "Role", "to": "Singer"}, {"from": "Abhishek Bachchan", "title": "Role", "to": "Producer"}, {"from": "Abhishek Bachchan", "title": "Gender", "to": "male"}, {"from": "Abhishek Bachchan", "title": "DateOfBirth", "to": "05 Feb 1976"}, {"from": "Abhishek Bachchan", "title": "Place", "to": "Mumbai, Maharashtra"}, {"from": "Abhishek Bachchan", "title": "Country", "to": "IN"}, {"from": "Abhishek Bachchan", "title": "TwitterID", "to": "@juniorbachchan"}, {"from": "Abhishek Bachchan", "title": "mother", "to": "Jaya Bachchan"}, {"from": "Abhishek Bachchan", "title": "father", "to": "Amitabh Bachchan"}, {"from": "Amitabh Bachchan", "title": "spouse", "to": "Jaya Bachchan"}, {"from": "Abhishek Bachchan", "title": "work period (start)", "to": "2002"}, {"from": "Amitabh Bachchan", "title": "child", "to": "Shweta Bachchan-Nanda"}, {"from": "Abhishek Bachchan", "title": "Independent_cluster_to_main_node", "to": "Shweta Bachchan-Nanda"}, {"from": "Jaya Bachchan", "title": "spouse", "to": "Shweta Bach"}, {"from": "Abhishek Bachchan", "title": "Independent_cluster_to_main_node", "to": "Shweta Bach"}, {"from": "Abhishek Bachchan", "title": "spouse", "to": "Aishwary Rai"}, {"from": "Abhishek Bachchan", "title": "work period (start)", "to": "2004"}, {"from": "Dhoom", "title": "cast member", "to": "Abhishek Bachchan"}, {"from": "Dhoom", "title": "publication date", "to": "2004"}, {"from": "Bunty aur Babli", "title": "cast member", "to": "Abhishek Bachchan"}, {"from": "Bunty aur Babli", "title": "publication date", "to": "2005"}, {"from": "Abhishek Bachchan", "title": "Independent_cluster_to_main_node", "to": "2005"}, {"from": "Sarkar", "title": "cast member", "to": "Abhishek Bachchan"}, {"from": "Sarkar", "title": "publication date", "to": "2005"}, {"from": "Dus", "title": "cast member", "to": "Abhishek Bachchan"}, {"from": "Dus", "title": "publication date", "to": "2005"}, {"from": "Bluffmaster", "title": "cast member", "to": "Abhishek Bachchan"}, {"from": "Bluffmaster", "title": "publication date", "to": "2006"}, {"from": "Abhishek Bachchan", "title": "Independent_cluster_to_main_node", "to": "2006"}, {"from": "Guru", "title": "publication date", "to": "2007"}, {"from": "Abhishek Bachchan", "title": "Independent_cluster_to_main_node", "to": "2007"}, {"from": "Paa", "title": "cast member", "to": "Abhishek Bachchan"}, {"from": "Kabhi Alvida Naa Kehena", "title": "publication date", "to": "2007"}, {"from": "Raavan", "title": "cast member", "to": "Aishwarya Rai Bachchan"}, {"from": "Abhishek Bachchan", "title": "Independent_cluster_to_main_node", "to": "Aishwarya Rai Bachchan"}, {"from": "Dhoom-3", "title": "publication date", "to": "2013"}, {"from": "Abhishek Bachchan", "title": "Independent_cluster_to_main_node", "to": "2013"}, {"from": "Dhoom-3", "title": "director", "to": "Vijay Krishna Acharya"}, {"from": "Abhishek Bachchan", "title": "Independent_cluster_to_main_node", "to": "Vijay Krishna Acharya"}, {"from": "Raavan", "title": "publication date", "to": "2010"}, {"from": "Abhishek Bachchan", "title": "Independent_cluster_to_main_node", "to": "2010"}, {"from": "Abhishek Bannerjee", "title": "Role", "to": "Actor"}, {"from": "Abhishek Bannerjee", "title": "Role", "to": "Story"}, {"from": "Abhishek Bannerjee", "title": "Gender", "to": "male"}, {"from": "Abhishek Bannerjee", "title": "DateOfBirth", "to": "05 May 1985"}, {"from": "Abhishek Bannerjee", "title": "Place", "to": "Kharagpur, West Bengal"}, {"from": "Abhishek Bannerjee", "title": "Country", "to": "IN"}, {"from": "Abhishek Bannerjee", "title": "date of birth", "to": "May 5, 1985"}, {"from": "The Dirty Picture", "title": "cast member", "to": "Abhishek Bannerjee"}, {"from": "Stree", "title": "cast member", "to": "Abhishek Bannerjee"}, {"from": "Stree", "title": "genre", "to": "horror"}, {"from": "Abhishek Bannerjee", "title": "Independent_cluster_to_main_node", "to": "horror"}, {"from": "The Dirty Picture", "title": "narrative location", "to": "Mumbai"}, {"from": "Abhishek Bannerjee", "title": "Independent_cluster_to_main_node", "to": "Mumbai"}, {"from": "Mirzapur", "title": "cast member", "to": "Abhishek Bannerjee"}, {"from": "Rang De Basanti", "title": "cast member", "to": "Abhishek Bannerjee"}, {"from": "Abhishek Das", "title": "Role", "to": "Actor"}, {"from": "Abhishek Das", "title": "Gender", "to": "male"}, {"from": "Abhishek Das", "title": "country of citizenship", "to": "IN"}, {"from": "Gattimela", "title": "cast member", "to": "Abhishek Das"}, {"from": "Abhishek Jayadeep", "title": "Place", "to": "Thrissur, Kerala"}, {"from": "Abhishek Jayadeep", "title": "Country", "to": "IN"}, {"from": "Abhishek Jayadeep", "title": "residence", "to": "Pune"}, {"from": "Abhishek Kapoor", "title": "Role", "to": "Director"}, {"from": "Abhishek Kapoor", "title": "Role", "to": "Story"}, {"from": "Abhishek Kapoor", "title": "Role", "to": "Producer"}, {"from": "Abhishek Kapoor", "title": "Gender", "to": "male"}, {"from": "Abhishek Kapoor", "title": "Country", "to": "IN"}, {"from": "Uff!Yeh Mohabbat", "title": "publication date", "to": "1996"}, {"from": "Abhishek Kapoor", "title": "Independent_cluster_to_main_node", "to": "1996"}, {"from": "Uff!Yeh Mohabbat", "title": "cast member", "to": "Twinkle Khanna"}, {"from": "Abhishek Kapoor", "title": "Independent_cluster_to_main_node", "to": "Twinkle Khanna"}, {"from": "Uff!Yeh Mohabbat", "title": "director", "to": "Vipin Handa"}, {"from": "Abhishek Kapoor", "title": "Independent_cluster_to_main_node", "to": "Vipin Handa"}, {"from": "Rock On", "title": "publication date", "to": "2008"}, {"from": "Abhishek Kapoor", "title": "Independent_cluster_to_main_node", "to": "2008"}, {"from": "Rock On", "title": "cast member", "to": "Farhan Akhtar"}, {"from": "Abhishek Kapoor", "title": "Independent_cluster_to_main_node", "to": "Farhan Akhtar"}, {"from": "Aryan", "title": "publication date", "to": "2006"}, {"from": "Abhishek Kapoor", "title": "Independent_cluster_to_main_node", "to": "2006"}, {"from": "Abhishek Kapur", "title": "Role", "to": "Director"}, {"from": "Abhishek Kapur", "title": "Gender", "to": "male"}, {"from": "Abhishek Kapur", "title": "Country", "to": "IN"}, {"from": "Kundali Bhagya", "title": "country of origin", "to": "IN"}, {"from": "Kundali Bhagya", "title": "cast member", "to": "Abhishek Kapur"}, {"from": "Abhishek kumar", "title": "Role", "to": "Actor"}, {"from": "Abhishek kumar", "title": "Role", "to": "Editing"}, {"from": "Abhishek kumar", "title": "Gender", "to": "male"}, {"from": "Abhishek kumar", "title": "Country", "to": "IN"}, {"from": "Indian Idol", "title": "instance of", "to": "TV series"}, {"from": "Abhishek kumar", "title": "Independent_cluster_to_main_node", "to": "TV series"}, {"from": "\"Indian Idol\"", "title": "instance of", "to": "TV series"}, {"from": "\"Indian Idol\" (2004)", "title": "instance of", "to": "TV series"}, {"from": "Abhishek Kumar", "title": "Role", "to": "Actor"}, {"from": "Abhishek Kumar", "title": "Gender", "to": "male"}, {"from": "Abhishek Kumar", "title": "DateOfBirth", "to": "26 Aug 1995"}, {"from": "Abhishek Kumar", "title": "Place", "to": "Punjab"}, {"from": "Abhishek Kumar", "title": "Country", "to": "IN"}, {"from": "Udaariyaan", "title": "cast member", "to": "Abhishek Kumar"}, {"from": "Abhishek Kumar", "title": "work period (start)", "to": "2018"}, {"from": "Abhishek Malhan", "title": "Gender", "to": "male"}, {"from": "Abhishek Malhan", "title": "DateOfBirth", "to": "24 May 1997"}, {"from": "Abhishek Malhan", "title": "Place", "to": "Pitampura, Delhi"}, {"from": "Abhishek Malhan", "title": "Country", "to": "IN"}, {"from": "Abhishek Malhan", "title": "date of birth", "to": "1999"}, {"from": "Bigg Boss OTT 2", "title": "cast member", "to": "Abhishek Malhan"}, {"from": "Abhishek Sreekumar", "title": "Gender", "to": "male"}, {"from": "Abhishek Sreekumar", "title": "Country", "to": "IN"}, {"from": "Abhishek Sreekumar", "title": "place of birth", "to": "Kerala"}, {"from": "Abhishek Sreekumar", "title": "participant in", "to": "Bigg Boss Malayalam Season 6"}, {"from": "Abi", "title": "Role", "to": "Actor"}, {"from": "Abi", "title": "Gender", "to": "female"}, {"from": "Abi", "title": "child", "to": "Shane Nigam"}, {"from": "Abi Saravanan", "title": "Role", "to": "Actor"}, {"from": "Abi Saravanan", "title": "Gender", "to": "male"}, {"from": "Saahasam", "title": "cast member", "to": "Abi Saravanan"}, {"from": "Touring Talkies", "title": "cast member", "to": "Abi Saravanan"}, {"from": "Abijeeth Duddala", "title": "Role", "to": "Actor"}, {"from": "Abijeeth Duddala", "title": "Gender", "to": "male"}, {"from": "Abijeeth Duddala", "title": "DateOfBirth", "to": "11 Oct 1988"}, {"from": "Abijeeth Duddala", "title": "Place", "to": "Hyderabad, Andhra Pradesh"}, {"from": "Abijeeth Duddala", "title": "Country", "to": "IN"}, {"from": "Bigg Boss 4", "title": "based on", "to": "Big Brother"}, {"from": "Abijeeth Duddala", "title": "Independent_cluster_to_main_node", "to": "Big Brother"}, {"from": "Bigg Boss 4", "title": "winner", "to": "Abijeeth Duddala"}, {"from": "Abinandhan Ramanujam", "title": "Role", "to": "Cinematography"}, {"from": "Abinandhan Ramanujam", "title": "Gender", "to": "male"}, {"from": "Chennai", "title": "located in the administrative territorial entity", "to": "Tamil Nadu"}, {"from": "Abinandhan Ramanujam", "title": "Independent_cluster_to_main_node", "to": "Tamil Nadu"}, {"from": "Abinandhan Ramanujam", "title": "Independent_cluster_to_main_node", "to": "Chennai"}, {"from": "Abishek Raja", "title": "Role", "to": "Actor"}, {"from": "Abishek Raja", "title": "Role", "to": "Dialogues"}, {"from": "Abishek Raja", "title": "Gender", "to": "male"}, {"from": "Imaikkaa Nodigal", "title": "cast member", "to": "Abishek Raja"}, {"from": "Imaikkaa Nodigal", "title": "publication date", "to": "2018"}, {"from": "Abishek Raja", "title": "Independent_cluster_to_main_node", "to": "2018"}, {"from": "Abrar Zahoor", "title": "Role", "to": "Actor"}, {"from": "Abrar Zahoor", "title": "Gender", "to": "female"}, {"from": "Abrar Zahoor", "title": "Country", "to": "IN"}, {"from": "Janleva 555", "title": "cast member", "to": "Abrar Zahoor"}, {"from": "Neerja", "title": "cast member", "to": "Abrar Zahoor"}, {"from": "Abrar Zahoor", "title": "place of birth", "to": "Delhi"}, {"from": "Abu Malik", "title": "Role", "to": "Music Director"}, {"from": "Abu Malik", "title": "Gender", "to": "male"}, {"from": "Abu Malik", "title": "DateOfBirth", "to": "02 Nov 1960"}, {"from": "Abu Malik", "title": "sibling", "to": "Anu"}, {"from": "Abu Malik", "title": "sibling", "to": "Dabboo Malik"}, {"from": "Anu", "title": "sibling", "to": "Dabboo Malik"}, {"from": "Abyuktha Manikandan", "title": "Role", "to": "Actor"}, {"from": "Abyuktha Manikandan", "title": "Gender", "to": "female"}, {"from": "Abyuktha Manikandan", "title": "Place", "to": "Chennai"}, {"from": "Abyuktha Manikandan", "title": "Country", "to": "IN"}, {"from": "Goat", "title": "cast member", "to": "Thalapathy Vijay"}, {"from": "Abyuktha Manikandan", "title": "Independent_cluster_to_main_node", "to": "Thalapathy Vijay"}, {"from": "Abyuktha Manikandan", "title": "father", "to": "Abyuktha Manikandan"}, {"from": "Anniyan", "title": "cast member", "to": "Abyuktha Manikandan"}, {"from": "Om Shanti Om", "title": "cast member", "to": "Abyuktha Manikandan"}, {"from": "Brahmastra", "title": "cast member", "to": "Abyuktha Manikandan"}, {"from": "Abyuktha Manikandan", "title": "Independent_cluster_to_main_node", "to": "Tamil Nadu"}, {"from": "Goat", "title": "publication date", "to": "2024"}, {"from": "Abyuktha Manikandan", "title": "Independent_cluster_to_main_node", "to": "2024"}, {"from": "Goat", "title": "director", "to": "Venkat Prabhu"}, {"from": "Abyuktha Manikandan", "title": "Independent_cluster_to_main_node", "to": "Venkat Prabhu"}, {"from": "Achint Kaur", "title": "Role", "to": "Actress"}, {"from": "Achint Kaur", "title": "Role", "to": "Lyricst"}, {"from": "Achint Kaur", "title": "Gender", "to": "female"}, {"from": "Achint Kaur", "title": "Place", "to": "Punjab"}, {"from": "Achint Kaur", "title": "Country", "to": "IN"}, {"from": "Swabhimaan", "title": "language of work or name", "to": "Hindi language"}, {"from": "Achint Kaur", "title": "Independent_cluster_to_main_node", "to": "Hindi language"}, {"from": "Achint Kaur", "title": "work period (start)", "to": "1994"}, {"from": "Swabhimaan", "title": "start time", "to": "1994"}, {"from": "Swabhimaan", "title": "original broadcaster", "to": "Zee TV"}, {"from": "Achint Kaur", "title": "Independent_cluster_to_main_node", "to": "Zee TV"}, {"from": "Swabhimaan", "title": "start time", "to": "1995"}, {"from": "Achint Kaur", "title": "Independent_cluster_to_main_node", "to": "1995"}, {"from": "Achyuth Kumar", "title": "Role", "to": "Actor"}, {"from": "Achyuth Kumar", "title": "Gender", "to": "male"}, {"from": "Achyuth Kumar", "title": "DateOfBirth", "to": "08 Mar 1966"}, {"from": "Achyuth Kumar", "title": "Place", "to": "Tiptur, Karnataka"}, {"from": "Achyuth Kumar", "title": "Country", "to": "IN"}, {"from": "Achyuth Kumar", "title": "TwitterID", "to": "AchyuthChaganti"}, {"from": "Tiptur", "title": "located in the administrative territorial entity", "to": "Tumkur"}, {"from": "Achyuth Kumar", "title": "Independent_cluster_to_main_node", "to": "Tumkur"}, {"from": "Achyuth Kumar", "title": "award received", "to": "Filmfare Awards"}, {"from": "Achyuth Kumar", "title": "work period (start)", "to": "2000"}, {"from": "Gruhabhanga", "title": "creator", "to": "Girish Kasaravalli"}, {"from": "Achyuth Kumar", "title": "Independent_cluster_to_main_node", "to": "Girish Kasaravalli"}, {"from": "Moggina Manasu", "title": "cast member", "to": "Achyuth Kumar"}, {"from": "Moggina Manasu", "title": "publication date", "to": "2007"}, {"from": "Achyuth Kumar", "title": "Independent_cluster_to_main_node", "to": "2007"}, {"from": "Aa Dinagalu", "title": "cast member", "to": "Achyuth Kumar"}, {"from": "Aa Dinagalu", "title": "publication date", "to": "2007"}, {"from": "Lucia", "title": "cast member", "to": "Sathish Ninasam"}, {"from": "Achyuth Kumar", "title": "Independent_cluster_to_main_node", "to": "Sathish Ninasam"}, {"from": "Moggina Manasu", "title": "cast member", "to": "Anant Nag"}, {"from": "Achyuth Kumar", "title": "Independent_cluster_to_main_node", "to": "Anant Nag"}, {"from": "Aa Dinagalu", "title": "cast member", "to": "Anant Nag"}, {"from": "Adah Sharma", "title": "Role", "to": "Actress"}, {"from": "Adah Sharma", "title": "Gender", "to": "female"}, {"from": "Adah Sharma", "title": "DateOfBirth", "to": "11 May 1992"}, {"from": "Adah Sharma", "title": "Place", "to": "Mumbai"}, {"from": "Adah Sharma", "title": "Country", "to": "IN"}, {"from": "1920", "title": "cast member", "to": "Adah Sharma"}, {"from": "1920", "title": "publication date", "to": "1920"}, {"from": "Subramanyam For Sale", "title": "cast member", "to": "Adah Sharma"}, {"from": "Adam Herschman", "title": "Role", "to": "Actor"}, {"from": "Adam Herschman", "title": "Gender", "to": "male"}, {"from": "Adam Herschman", "title": "Country", "to": "IN"}, {"from": "Accepted", "title": "cast member", "to": "Adam Herschman"}, {"from": "Accepted", "title": "publication date", "to": "2006"}, {"from": "Adam Herschman", "title": "Independent_cluster_to_main_node", "to": "2006"}, {"from": "Adam Levine", "title": "Role", "to": "Actor"}, {"from": "Adam Levine", "title": "Gender", "to": "male"}, {"from": "Adam Levine", "title": "DateOfBirth", "to": "18 Mar 1979"}, {"from": "Adam Levine", "title": "Country", "to": "IN"}, {"from": "Adam Noah Levine", "title": "date of birth", "to": "March 18, 1979"}, {"from": "Adam Levine", "title": "Independent_cluster_to_main_node", "to": "March 18, 1979"}, {"from": "Adam Noah Levine", "title": "genre", "to": "pop rock"}, {"from": "Adam Levine", "title": "Independent_cluster_to_main_node", "to": "pop rock"}, {"from": "Adam Noah Levine", "title": "member of", "to": "Maroon 5"}, {"from": "Adam Levine", "title": "Independent_cluster_to_main_node", "to": "Maroon 5"}, {"from": "Adam Levine", "title": "Independent_cluster_to_main_node", "to": "Adam Noah Levine"}, {"from": "Maroon 5", "title": "genre", "to": "pop rock"}, {"from": "Adam Noah", "title": "date of birth", "to": "March 18, 1979"}, {"from": "Adam Noah", "title": "member of", "to": "Maroon 5"}, {"from": "Adam Levine", "title": "Independent_cluster_to_main_node", "to": "Adam Noah"}, {"from": "Noah Levine", "title": "date of birth", "to": "March 18, 1979"}, {"from": "Noah Levine", "title": "member of", "to": "Maroon 5"}, {"from": "Adam Levine", "title": "Independent_cluster_to_main_node", "to": "Noah Levine"}, {"from": "Adam Pasha", "title": "Gender", "to": "female"}, {"from": "Adam Pasha", "title": "Place", "to": "Bangaluru"}, {"from": "Adam Pasha", "title": "Country", "to": "IN"}, {"from": "Bigg Boss Kannada Season 6", "title": "number of episodes", "to": "17"}, {"from": "Adam Pasha", "title": "Independent_cluster_to_main_node", "to": "17"}, {"from": "Adam Rodriguez", "title": "Role", "to": "Actor"}, {"from": "Adam Rodriguez", "title": "Gender", "to": "male"}, {"from": "Adam Rodriguez", "title": "DateOfBirth", "to": "02 Apr 1975"}, {"from": "Adam Rodriguez", "title": "Place", "to": "New York City, New York"}, {"from": "Adam Rodriguez", "title": "Country", "to": "US"}, {"from": "Keith Bulluck", "title": "educated at", "to": "Clarkstown High School North"}, {"from": "Adam Rodriguez", "title": "Independent_cluster_to_main_node", "to": "Clarkstown High School North"}, {"from": "Keith Bulluck", "title": "member of sports team", "to": "Tennessee Titans"}, {"from": "Adam Rodriguez", "title": "Independent_cluster_to_main_node", "to": "Tennessee Titans"}, {"from": "If You Had My Love", "title": "performer", "to": "Jennifer Lopez"}, {"from": "Adam Rodriguez", "title": "Independent_cluster_to_main_node", "to": "Jennifer Lopez"}, {"from": "I Call it Love", "title": "performer", "to": "Lionel Richie"}, {"from": "Adam Rodriguez", "title": "Independent_cluster_to_main_node", "to": "Lionel Richie"}, {"from": "Adam Rothenberg", "title": "Role", "to": "Actor"}, {"from": "Adam Rothenberg", "title": "Gender", "to": "male"}, {"from": "Adam Rothenberg", "title": "Country", "to": "IN"}, {"from": "Mad Money (film)", "title": "cast member", "to": "Katie Holmes"}, {"from": "Adam Rothenberg", "title": "Independent_cluster_to_main_node", "to": "Katie Holmes"}, {"from": "Adam Rothenberg", "title": "country of citizenship", "to": "American"}, {"from": "The Jury", "title": "country of origin", "to": "American"}, {"from": "Damages", "title": "country of origin", "to": "American"}, {"from": "Law \u0026 Order", "title": "country of origin", "to": "American"}, {"from": "The Ex List", "title": "country of origin", "to": "American"}, {"from": "Mad Money (film)", "title": "country of origin", "to": "American"}, {"from": "The Jury", "title": "cast member", "to": "Adam Rothenberg"}, {"from": "Adam Sandler", "title": "Role", "to": "Actor"}, {"from": "Adam Sandler", "title": "Role", "to": "Producer"}, {"from": "Adam Sandler", "title": "Gender", "to": "male"}, {"from": "Adam Sandler", "title": "DateOfBirth", "to": "09 Sep 1966"}, {"from": "Adam Sandler", "title": "Place", "to": "Brooklyn, New York"}, {"from": "Adam Sandler", "title": "Country", "to": "US"}, {"from": "Billy Madison", "title": "cast member", "to": "Adam Sandler"}, {"from": "Happy Gilmore", "title": "cast member", "to": "Adam Sandler"}, {"from": "Big Daddy", "title": "cast member", "to": "Adam Sandler"}, {"from": "The Wedding Singer", "title": "cast member", "to": "Adam Sandler"}, {"from": "Punch-Drunk Love", "title": "cast member", "to": "Adam Sandler"}, {"from": "Spanglish", "title": "cast member", "to": "Adam Sandler"}, {"from": "Reign Over Me", "title": "cast member", "to": "Adam Sandler"}, {"from": "Manchester Central High School", "title": "located in the administrative territorial entity", "to": "Manchester, New Hampshire"}, {"from": "Adam Sandler", "title": "Independent_cluster_to_main_node", "to": "Manchester, New Hampshire"}, {"from": "Click", "title": "narrative location", "to": "New Hampshire"}, {"from": "Adam Sandler", "title": "Independent_cluster_to_main_node", "to": "New Hampshire"}, {"from": "Lake Winnipesaukee", "title": "located in the administrative territorial entity", "to": "New Hampshire"}, {"from": "Click", "title": "cast member", "to": "Stanley Sandler"}, {"from": "Adam Sandler", "title": "Independent_cluster_to_main_node", "to": "Stanley Sandler"}, {"from": "Theo Huxtable", "title": "present in work", "to": "The Cosby Show"}, {"from": "Adam Sandler", "title": "Independent_cluster_to_main_node", "to": "The Cosby Show"}, {"from": "Adam Sandler", "title": "Independent_cluster_to_main_node", "to": "Theo Huxtable"}, {"from": "Saturday Night Live", "title": "creator", "to": "Lorne Michaels"}, {"from": "Adam Sandler", "title": "Independent_cluster_to_main_node", "to": "Lorne Michaels"}, {"from": "Going Overboard", "title": "publication date", "to": "1989"}, {"from": "Adam Sandler", "title": "Independent_cluster_to_main_node", "to": "1989"}, {"from": "Billy Madison", "title": "publication date", "to": "1995"}, {"from": "Adam Sandler", "title": "Independent_cluster_to_main_node", "to": "1995"}, {"from": "The Waterboy", "title": "genre", "to": "comedy"}, {"from": "Adam Sandler", "title": "Independent_cluster_to_main_node", "to": "comedy"}, {"from": "The Waterboy", "title": "genre", "to": "comedy/thriller"}, {"from": "Adam Sandler", "title": "Independent_cluster_to_main_node", "to": "comedy/thriller"}, {"from": "Punch-Drunk Love", "title": "genre", "to": "slapstick humour"}, {"from": "Adam Sandler", "title": "Independent_cluster_to_main_node", "to": "slapstick humour"}, {"from": "Collateral", "title": "cast member", "to": "Jamie Foxx"}, {"from": "Adam Sandler", "title": "Independent_cluster_to_main_node", "to": "Jamie Foxx"}, {"from": "Willy Wonka", "title": "present in work", "to": "Charlie and the Chocolate Factory"}, {"from": "Adam Sandler", "title": "Independent_cluster_to_main_node", "to": "Charlie and the Chocolate Factory"}, {"from": "Adam Sandler", "title": "Independent_cluster_to_main_node", "to": "Willy Wonka"}, {"from": "Charlie and the Chocolate Factory", "title": "director", "to": "Tim Burton"}, {"from": "Adam Sandler", "title": "Independent_cluster_to_main_node", "to": "Tim Burton"}, {"from": "Willy Wonka", "title": "creator", "to": "Tim Burton"}, {"from": "I Now Pronounce You Chuck and Larry", "title": "cast member", "to": "Kevin James"}, {"from": "Adam Sandler", "title": "Independent_cluster_to_main_node", "to": "Kevin James"}, {"from": "The 40-Year-Old Virgin", "title": "director", "to": "Judd Apatow"}, {"from": "Adam Sandler", "title": "Independent_cluster_to_main_node", "to": "Judd Apatow"}, {"from": "Bedtime Stories", "title": "genre", "to": "fantasy film"}, {"from": "Adam Sandler", "title": "Independent_cluster_to_main_node", "to": "fantasy film"}, {"from": "Bedtime Stories", "title": "director", "to": "Adam Shankman"}, {"from": "Adam Sandler", "title": "Independent_cluster_to_main_node", "to": "Adam Shankman"}, {"from": "Bringing Down the House", "title": "genre", "to": "fantasy film"}, {"from": "Bringing Down the House", "title": "director", "to": "Adam Shankman"}, {"from": "Happy Gilmore", "title": "director", "to": "Dennis Dugan"}, {"from": "Adam Sandler", "title": "Independent_cluster_to_main_node", "to": "Dennis Dugan"}, {"from": "Inglourious Basterds", "title": "director", "to": "Quentin Tarantino"}, {"from": "Adam Sandler", "title": "Independent_cluster_to_main_node", "to": "Quentin Tarantino"}, {"from": "Sadie Madison Sandler", "title": "date of birth", "to": "May 6, 2006"}, {"from": "Adam Sandler", "title": "Independent_cluster_to_main_node", "to": "May 6, 2006"}, {"from": "Sadie Madison Sandler", "title": "production company", "to": "Happy Madison"}, {"from": "Adam Sandler", "title": "Independent_cluster_to_main_node", "to": "Happy Madison"}, {"from": "Sadie Madison Sandler", "title": "sibling", "to": "Sunny Madeline Sandler"}, {"from": "Adam Sandler", "title": "Independent_cluster_to_main_node", "to": "Sunny Madeline Sandler"}, {"from": "Adam Sandler", "title": "Independent_cluster_to_main_node", "to": "Sadie Madison Sandler"}, {"from": "Adarsh Balakrishna", "title": "Role", "to": "Actor"}, {"from": "Adarsh Balakrishna", "title": "Gender", "to": "male"}, {"from": "Adarsh Balakrishna", "title": "DateOfBirth", "to": "10 Feb 1984"}, {"from": "Adarsh Balakrishna", "title": "Place", "to": "Bangalore, Karnatak"}, {"from": "Adarsh Balakrishna", "title": "Country", "to": "IN"}, {"from": "Adarsh Balakrishna", "title": "TwitterID", "to": "AadarshBKrishna"}, {"from": "Adarsh Balakrishna", "title": "educated at", "to": "Nizam College"}, {"from": "Adarsh Balakrishna", "title": "sport", "to": "cricket"}, {"from": "Osmania University", "title": "located in the administrative territorial entity", "to": "Hyderabad"}, {"from": "Adarsh Balakrishna", "title": "Independent_cluster_to_main_node", "to": "Hyderabad"}, {"from": "Shreyas Talpade", "title": "educated at", "to": "Osmania University"}, {"from": "Adarsh Balakrishna", "title": "Independent_cluster_to_main_node", "to": "Osmania University"}, {"from": "Nagesh Kukunoor", "title": "sport", "to": "cricket"}, {"from": "Shreyas Talpade", "title": "sport", "to": "cricket"}, {"from": "Iqbal", "title": "production company", "to": "Mukta Searchlight Films"}, {"from": "Adarsh Balakrishna", "title": "Independent_cluster_to_main_node", "to": "Mukta Searchlight Films"}, {"from": "Happy Days", "title": "director", "to": "Sekhar Kammula"}, {"from": "Adarsh Balakrishna", "title": "Independent_cluster_to_main_node", "to": "Sekhar Kammula"}, {"from": "Happy Days", "title": "publication date", "to": "2007"}, {"from": "Adarsh Balakrishna", "title": "Independent_cluster_to_main_node", "to": "2007"}, {"from": "Vinayakudu", "title": "director", "to": "Sai Kiran Avidi"}, {"from": "Adarsh Balakrishna", "title": "Independent_cluster_to_main_node", "to": "Sai Kiran Avidi"}, {"from": "Ride", "title": "director", "to": "Ramesh Varma"}, {"from": "Adarsh Balakrishna", "title": "Independent_cluster_to_main_node", "to": "Ramesh Varma"}, {"from": "Govindudu Andarivadele", "title": "director", "to": "Krishna Vamsi"}, {"from": "Adarsh Balakrishna", "title": "Independent_cluster_to_main_node", "to": "Krishna Vamsi"}, {"from": "Govindudu Andarivadele", "title": "cast member", "to": "Ram Charan"}, {"from": "Adarsh Balakrishna", "title": "Independent_cluster_to_main_node", "to": "Ram Charan"}, {"from": "Nooru Janmaku", "title": "director", "to": "Nagathihalli Chandrashekhar"}, {"from": "Adarsh Balakrishna", "title": "Independent_cluster_to_main_node", "to": "Nagathihalli Chandrashekhar"}, {"from": "Adarsh H Eshwarappa", "title": "Role", "to": "Director"}, {"from": "Adarsh H Eshwarappa", "title": "Gender", "to": "male"}, {"from": "Shuddhi", "title": "director", "to": "Adarsh H Eshwarappa"}, {"from": "Ade", "title": "Role", "to": "Actor"}, {"from": "Ade", "title": "Gender", "to": "male"}, {"from": "Ade", "title": "Country", "to": "IN"}, {"from": "Snatch", "title": "narrative location", "to": "Crouch End"}, {"from": "Ade", "title": "Independent_cluster_to_main_node", "to": "Crouch End"}, {"from": "Snatch", "title": "country of origin", "to": "British"}, {"from": "Ade", "title": "Independent_cluster_to_main_node", "to": "British"}, {"from": "Snatch", "title": "characters", "to": "Tyrone"}, {"from": "Ade", "title": "Independent_cluster_to_main_node", "to": "Tyrone"}, {"from": "Adele Romanski", "title": "Role", "to": "Producer"}, {"from": "Adele Romanski", "title": "Gender", "to": "female"}, {"from": "Adele Romanski", "title": "place of birth", "to": "Hollywood"}]);
+
+                  nodeColors = {};
+                  allNodes = nodes.get({ returnType: "Object" });
+                  for (nodeId in allNodes) {
+                    nodeColors[nodeId] = allNodes[nodeId].color;
+                  }
+                  allEdges = edges.get({ returnType: "Object" });
+                  // adding nodes and edges to the graph
+                  data = {nodes: nodes, edges: edges};
+
+                  var options = {
+    "configure": {
+        "enabled": false
+    },
+    "edges": {
+        "color": {
+            "inherit": true
+        },
+        "smooth": {
+            "enabled": true,
+            "type": "dynamic"
+        }
+    },
+    "interaction": {
+        "dragNodes": true,
+        "hideEdgesOnDrag": false,
+        "hideNodesOnDrag": false
+    },
+    "physics": {
+        "enabled": true,
+        "stabilization": {
+            "enabled": true,
+            "fit": true,
+            "iterations": 1000,
+            "onlyDynamicEdges": false,
+            "updateInterval": 50
+        }
+    }
+};
+
+                  
+
+
+                  
+
+                  network = new vis.Network(container, data, options);
+
+                  
+
+                  
+                    network.on("selectNode", neighbourhoodHighlight);
+                  
+
+                  
+
+
+                  
+                      network.on("stabilizationProgress", function(params) {
+                          document.getElementById('loadingBar').removeAttribute("style");
+                          var maxWidth = 496;
+                          var minWidth = 20;
+                          var widthFactor = params.iterations/params.total;
+                          var width = Math.max(minWidth,maxWidth * widthFactor);
+                          document.getElementById('bar').style.width = width + 'px';
+                          document.getElementById('text').innerHTML = Math.round(widthFactor*100) + '%';
+                      });
+                      network.once("stabilizationIterationsDone", function() {
+                          document.getElementById('text').innerHTML = '100%';
+                          document.getElementById('bar').style.width = '496px';
+                          document.getElementById('loadingBar').style.opacity = 0;
+                          // really clean the dom element
+                          setTimeout(function () {document.getElementById('loadingBar').style.display = 'none';}, 500);
+                      });
+                  
+
+                  return network;
+
+              }
+              drawGraph();
+        </script>
+    </body>
+</html>

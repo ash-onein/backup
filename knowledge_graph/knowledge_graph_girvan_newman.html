@@ -1,0 +1,971 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        
+            <script src="lib/bindings/utils.js"></script>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/dist/vis-network.min.css" integrity="sha512-WgxfT5LWjfszlPHXRmBWHkV2eceiWTOBvrKCNbdgDYTHrT2AeLCGbF4sZlZw3UMN3WtL0tGUoIAKsu8mllg/XA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/vis-network.min.js" integrity="sha512-LnvoEWDFrqGHlHmDD2101OrLcbsfkrzoSpvtSQtxK3RMnRV0eOkhhBN2dXHKRrUU8p2DGRTk35n4O8nWSVe1mQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+            
+                <link href="lib/tom-select/tom-select.css" rel="stylesheet">
+                <script src="lib/tom-select/tom-select.complete.min.js"></script>
+            
+        
+<center>
+<h1></h1>
+</center>
+
+<!-- <link rel="stylesheet" href="../node_modules/vis/dist/vis.min.css" type="text/css" />
+<script type="text/javascript" src="../node_modules/vis/dist/vis.js"> </script>-->
+        <link
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css"
+          rel="stylesheet"
+          integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6"
+          crossorigin="anonymous"
+        />
+        <script
+          src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js"
+          integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf"
+          crossorigin="anonymous"
+        ></script>
+
+
+        <center>
+          <h1></h1>
+        </center>
+        <style type="text/css">
+
+             #mynetwork {
+                 width: 100%;
+                 height: 750px;
+                 background-color: #ffffff;
+                 border: 1px solid lightgray;
+                 position: relative;
+                 float: left;
+             }
+
+             
+             #loadingBar {
+                 position:absolute;
+                 top:0px;
+                 left:0px;
+                 width: 100%;
+                 height: 750px;
+                 background-color:rgba(200,200,200,0.8);
+                 -webkit-transition: all 0.5s ease;
+                 -moz-transition: all 0.5s ease;
+                 -ms-transition: all 0.5s ease;
+                 -o-transition: all 0.5s ease;
+                 transition: all 0.5s ease;
+                 opacity:1;
+             }
+
+             #bar {
+                 position:absolute;
+                 top:0px;
+                 left:0px;
+                 width:20px;
+                 height:20px;
+                 margin:auto auto auto auto;
+                 border-radius:11px;
+                 border:2px solid rgba(30,30,30,0.05);
+                 background: rgb(0, 173, 246); /* Old browsers */
+                 box-shadow: 2px 0px 4px rgba(0,0,0,0.4);
+             }
+
+             #border {
+                 position:absolute;
+                 top:10px;
+                 left:10px;
+                 width:500px;
+                 height:23px;
+                 margin:auto auto auto auto;
+                 box-shadow: 0px 0px 4px rgba(0,0,0,0.2);
+                 border-radius:10px;
+             }
+
+             #text {
+                 position:absolute;
+                 top:8px;
+                 left:530px;
+                 width:30px;
+                 height:50px;
+                 margin:auto auto auto auto;
+                 font-size:22px;
+                 color: #000000;
+             }
+
+             div.outerBorder {
+                 position:relative;
+                 top:400px;
+                 width:600px;
+                 height:44px;
+                 margin:auto auto auto auto;
+                 border:8px solid rgba(0,0,0,0.1);
+                 background: rgb(252,252,252); /* Old browsers */
+                 background: -moz-linear-gradient(top,  rgba(252,252,252,1) 0%, rgba(237,237,237,1) 100%); /* FF3.6+ */
+                 background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(252,252,252,1)), color-stop(100%,rgba(237,237,237,1))); /* Chrome,Safari4+ */
+                 background: -webkit-linear-gradient(top,  rgba(252,252,252,1) 0%,rgba(237,237,237,1) 100%); /* Chrome10+,Safari5.1+ */
+                 background: -o-linear-gradient(top,  rgba(252,252,252,1) 0%,rgba(237,237,237,1) 100%); /* Opera 11.10+ */
+                 background: -ms-linear-gradient(top,  rgba(252,252,252,1) 0%,rgba(237,237,237,1) 100%); /* IE10+ */
+                 background: linear-gradient(to bottom,  rgba(252,252,252,1) 0%,rgba(237,237,237,1) 100%); /* W3C */
+                 filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#fcfcfc', endColorstr='#ededed',GradientType=0 ); /* IE6-9 */
+                 border-radius:72px;
+                 box-shadow: 0px 0px 10px rgba(0,0,0,0.2);
+             }
+             
+
+             
+
+             
+        </style>
+    </head>
+
+
+    <body>
+        <div class="card" style="width: 100%">
+            
+                <div id="select-menu" class="card-header">
+                    <div class="row no-gutters">
+                        <div class="col-10 pb-2">
+                            <select
+                            class="form-select"
+                            aria-label="Default select example"
+                            onchange="selectNode([value]);"
+                            id="select-node"
+                            placeholder="Select node..."
+                            >
+                                <option selected>Select a Node by ID</option>
+                                
+                                    <option value="A Jayan">A Jayan</option>
+                                
+                                    <option value="13282">13282</option>
+                                
+                                    <option value="Producer">Producer</option>
+                                
+                                    <option value="male">male</option>
+                                
+                                    <option value="A Karunakaran">A Karunakaran</option>
+                                
+                                    <option value="4060">4060</option>
+                                
+                                    <option value="Director,Screenplay">Director,Screenplay</option>
+                                
+                                    <option value="Director">Director</option>
+                                
+                                    <option value="IN">IN</option>
+                                
+                                    <option value="A R Rahman">A R Rahman</option>
+                                
+                                    <option value="2362">2362</option>
+                                
+                                    <option value="Music Director,Singer,Lyricst,Producer,Actor,Story">Music Director,Singer,Lyricst,Producer,Actor,Story</option>
+                                
+                                    <option value="Music Director">Music Director</option>
+                                
+                                    <option value="06 Jan 1966">06 Jan 1966</option>
+                                
+                                    <option value="Kodambakkam, Chennai">Kodambakkam, Chennai</option>
+                                
+                                    <option value="arrahman">arrahman</option>
+                                
+                                    <option value="A V Ravi">A V Ravi</option>
+                                
+                                    <option value="24270">24270</option>
+                                
+                                    <option value="Actor">Actor</option>
+                                
+                                    <option value="A Vinoth Kumar">A Vinoth Kumar</option>
+                                
+                                    <option value="50319">50319</option>
+                                
+                                    <option value="dir_vinothkumar">dir_vinothkumar</option>
+                                
+                                    <option value="A.R. Murugadoss">A.R. Murugadoss</option>
+                                
+                                    <option value="2361">2361</option>
+                                
+                                    <option value="Director,Producer,Story,Screenplay">Director,Producer,Story,Screenplay</option>
+                                
+                                    <option value="25 Sep 1974">25 Sep 1974</option>
+                                
+                                    <option value="Trichy, Tamilnadu.">Trichy, Tamilnadu.</option>
+                                
+                                    <option value="ARMurugadoss">ARMurugadoss</option>
+                                
+                                    <option value="Aadesh Shrivastav">Aadesh Shrivastav</option>
+                                
+                                    <option value="2549">2549</option>
+                                
+                                    <option value="Music Director,Singer,Actor">Music Director,Singer,Actor</option>
+                                
+                                    <option value="04 Sep 1966">04 Sep 1966</option>
+                                
+                                    <option value="Aadhi">Aadhi</option>
+                                
+                                    <option value="9177">9177</option>
+                                
+                                    <option value="14 Dec 1982">14 Dec 1982</option>
+                                
+                                    <option value="Chennai">Chennai</option>
+                                
+                                    <option value="Aadhira Pandilakshmi">Aadhira Pandilakshmi</option>
+                                
+                                    <option value="43567">43567</option>
+                                
+                                    <option value="Actress">Actress</option>
+                                
+                                    <option value="female">female</option>
+                                
+                                    <option value="22 Apr 1978">22 Apr 1978</option>
+                                
+                                    <option value="AadhiraOfficial">AadhiraOfficial</option>
+                                
+                                    <option value="Aadi Saikumar">Aadi Saikumar</option>
+                                
+                                    <option value="23530">23530</option>
+                                
+                                    <option value="23 Dec 1987">23 Dec 1987</option>
+                                
+                                    <option value="Madras, Tamil Nadu">Madras, Tamil Nadu</option>
+                                
+                                    <option value="Aaditi Pohankar">Aaditi Pohankar</option>
+                                
+                                    <option value="37447">37447</option>
+                                
+                                    <option value="Aahil Khan">Aahil Khan</option>
+                                
+                                    <option value="52689">52689</option>
+                                
+                                    <option value="Aajeedh Khalique">Aajeedh Khalique</option>
+                                
+                                    <option value="48033">48033</option>
+                                
+                                    <option value="Actor,Singer">Actor,Singer</option>
+                                
+                                    <option value="Aakanksha Singh">Aakanksha Singh</option>
+                                
+                                    <option value="37793">37793</option>
+                                
+                                    <option value="30 Jul 1990">30 Jul 1990</option>
+                                
+                                    <option value="Jaipur, Rajasthan">Jaipur, Rajasthan</option>
+                                
+                                    <option value="Aaliya Siddiqui">Aaliya Siddiqui</option>
+                                
+                                    <option value="53803">53803</option>
+                                
+                                    <option value="18 Apr 1977">18 Apr 1977</option>
+                                
+                                    <option value="Jabalpur, Madhya Pradesh">Jabalpur, Madhya Pradesh</option>
+                                
+                                    <option value="ASiddiqui2020">ASiddiqui2020</option>
+                                
+                                    <option value="Aaman Devgan">Aaman Devgan</option>
+                                
+                                    <option value="64809">64809</option>
+                                
+                                    <option value="18 Feb 0">18 Feb 0</option>
+                                
+                                    <option value="Aamir Ali Malik">Aamir Ali Malik</option>
+                                
+                                    <option value="23174">23174</option>
+                                
+                                    <option value="01 Sep 1977">01 Sep 1977</option>
+                                
+                                    <option value="Mumbai">Mumbai</option>
+                                
+                                    <option value="Aamir Bashir">Aamir Bashir</option>
+                                
+                                    <option value="2413">2413</option>
+                                
+                                    <option value="Kashmir">Kashmir</option>
+                                
+                                    <option value="Aamir Khan">Aamir Khan</option>
+                                
+                                    <option value="2360">2360</option>
+                                
+                                    <option value="Actor,Producer,Singer,Director">Actor,Producer,Singer,Director</option>
+                                
+                                    <option value="14 Mar 1965">14 Mar 1965</option>
+                                
+                                    <option value="Mumbai, Maharashtra">Mumbai, Maharashtra</option>
+                                
+                                    <option value="Aamna Sharif">Aamna Sharif</option>
+                                
+                                    <option value="10475">10475</option>
+                                
+                                    <option value="16 Jul 1982">16 Jul 1982</option>
+                                
+                                    <option value="Aanchal Goswami">Aanchal Goswami</option>
+                                
+                                    <option value="57655">57655</option>
+                                
+                                    <option value="Aanchal Singh">Aanchal Singh</option>
+                                
+                                    <option value="29864">29864</option>
+                                
+                                    <option value="05 Apr 1992">05 Apr 1992</option>
+                                
+                                    <option value="Chandigarh">Chandigarh</option>
+                                
+                                    <option value="Aaradhya Devi">Aaradhya Devi</option>
+                                
+                                    <option value="61059">61059</option>
+                                
+                                    <option value="Kottayam">Kottayam</option>
+                                
+                                    <option value="IamAaradhyaDevi">IamAaradhyaDevi</option>
+                                
+                                    <option value="Aarathi (Kannada Actress)">Aarathi (Kannada Actress)</option>
+                                
+                                    <option value="18671">18671</option>
+                                
+                                    <option value="Actress,Producer">Actress,Producer</option>
+                                
+                                    <option value="Aari (Tamil Actor)">Aari (Tamil Actor)</option>
+                                
+                                    <option value="27782">27782</option>
+                                
+                                    <option value="Aarjavee">Aarjavee</option>
+                                
+                                    <option value="48484">48484</option>
+                                
+                                    <option value="Aaron Eckhart">Aaron Eckhart</option>
+                                
+                                    <option value="5365">5365</option>
+                                
+                                    <option value="12 Mar 1968">12 Mar 1968</option>
+                                
+                                    <option value="Cupertino, California">Cupertino, California</option>
+                                
+                                    <option value="US">US</option>
+                                
+                                    <option value="Aaron Johnson">Aaron Johnson</option>
+                                
+                                    <option value="9183">9183</option>
+                                
+                                    <option value="13 Jun 1990">13 Jun 1990</option>
+                                
+                                    <option value="High Wycombe, England">High Wycombe, England</option>
+                                
+                                    <option value="GB">GB</option>
+                                
+                                    <option value="Aaron Paul">Aaron Paul</option>
+                                
+                                    <option value="8988">8988</option>
+                                
+                                    <option value="29 Aug 1979">29 Aug 1979</option>
+                                
+                                    <option value="Emmett, Idaho">Emmett, Idaho</option>
+                                
+                                    <option value="Aaron Yoo">Aaron Yoo</option>
+                                
+                                    <option value="7380">7380</option>
+                                
+                                    <option value="12 May 1979">12 May 1979</option>
+                                
+                                    <option value="New Jersey">New Jersey</option>
+                                
+                                    <option value="Aarthi">Aarthi</option>
+                                
+                                    <option value="11134">11134</option>
+                                
+                                    <option value="09 Nov 1987">09 Nov 1987</option>
+                                
+                                    <option value="Aarti Chhabria">Aarti Chhabria</option>
+                                
+                                    <option value="929">929</option>
+                                
+                                    <option value="21 Nov 1982">21 Nov 1982</option>
+                                
+                                    <option value="Aartii Naagpal">Aartii Naagpal</option>
+                                
+                                    <option value="58514">58514</option>
+                                
+                                    <option value="10 Nov 1979">10 Nov 1979</option>
+                                
+                                    <option value="Mumbai, India">Mumbai, India</option>
+                                
+                                    <option value="aartiinaagpal">aartiinaagpal</option>
+                                
+                                    <option value="Aarun Nagar">Aarun Nagar</option>
+                                
+                                    <option value="46760">46760</option>
+                                
+                                    <option value="Actor,Director,Editing">Actor,Director,Editing</option>
+                                
+                                    <option value="02 Aug 1982">02 Aug 1982</option>
+                                
+                                    <option value="Aashika Bhatia">Aashika Bhatia</option>
+                                
+                                    <option value="58498">58498</option>
+                                
+                                    <option value="15 Dec 1999">15 Dec 1999</option>
+                                
+                                    <option value="Surat, Gujarat">Surat, Gujarat</option>
+                                
+                                    <option value="Aashiq Abu">Aashiq Abu</option>
+                                
+                                    <option value="9620">9620</option>
+                                
+                                    <option value="Director,Producer,Cinematography,Actor">Director,Producer,Cinematography,Actor</option>
+                                
+                                    <option value="12 Apr 1978">12 Apr 1978</option>
+                                
+                                    <option value="Aasif Khan">Aasif Khan</option>
+                                
+                                    <option value="44328">44328</option>
+                                
+                                    <option value="Aasif Mandvi">Aasif Mandvi</option>
+                                
+                                    <option value="8880">8880</option>
+                                
+                                    <option value="05 Mar 1966">05 Mar 1966</option>
+                                
+                                    <option value="Aathmika">Aathmika</option>
+                                
+                                    <option value="37131">37131</option>
+                                
+                                    <option value="09 Feb 1993">09 Feb 1993</option>
+                                
+                                    <option value="Aayush Sharma">Aayush Sharma</option>
+                                
+                                    <option value="39725">39725</option>
+                                
+                                    <option value="26 Oct 1990">26 Oct 1990</option>
+                                
+                                    <option value="Mandi, Himachal Pradesh">Mandi, Himachal Pradesh</option>
+                                
+                                    <option value="Aayushi Jaiswal">Aayushi Jaiswal</option>
+                                
+                                    <option value="58921">58921</option>
+                                
+                                    <option value="27 Aug 1996">27 Aug 1996</option>
+                                
+                                    <option value="Lucknow, Uttar Pradesh">Lucknow, Uttar Pradesh</option>
+                                
+                                    <option value="Abbas (Tamil Actor)">Abbas (Tamil Actor)</option>
+                                
+                                    <option value="3893">3893</option>
+                                
+                                    <option value="21 May 1975">21 May 1975</option>
+                                
+                                    <option value="Calcutta">Calcutta</option>
+                                
+                                    <option value="Abbas Hassan">Abbas Hassan</option>
+                                
+                                    <option value="27991">27991</option>
+                                
+                                    <option value="Canada">Canada</option>
+                                
+                                    <option value="PK">PK</option>
+                                
+                                    <option value="Abbas Tyrewala">Abbas Tyrewala</option>
+                                
+                                    <option value="898">898</option>
+                                
+                                    <option value="Lyricst,Director,Dialogues">Lyricst,Director,Dialogues</option>
+                                
+                                    <option value="Lyricst">Lyricst</option>
+                                
+                                    <option value="Abdu Rozik">Abdu Rozik</option>
+                                
+                                    <option value="54271">54271</option>
+                                
+                                    <option value="Abhay Bethiganti">Abhay Bethiganti</option>
+                                
+                                    <option value="39409">39409</option>
+                                
+                                    <option value="Actor,Director">Actor,Director</option>
+                                
+                                    <option value="01 Nov 1991">01 Nov 1991</option>
+                                
+                                    <option value="Siddipet, Telangana">Siddipet, Telangana</option>
+                                
+                                    <option value="Abhay Deol">Abhay Deol</option>
+                                
+                                    <option value="48">48</option>
+                                
+                                    <option value="Actor,Producer">Actor,Producer</option>
+                                
+                                    <option value="15 Mar 1976">15 Mar 1976</option>
+                                
+                                    <option value="Abhay Simha">Abhay Simha</option>
+                                
+                                    <option value="15525">15525</option>
+                                
+                                    <option value="Abhi (Kannada Actor)">Abhi (Kannada Actor)</option>
+                                
+                                    <option value="41537">41537</option>
+                                
+                                    <option value="Abhi Basavaraj">Abhi Basavaraj</option>
+                                
+                                    <option value="62183">62183</option>
+                                
+                                    <option value="Abhijeet Bhattacharya">Abhijeet Bhattacharya</option>
+                                
+                                    <option value="123">123</option>
+                                
+                                    <option value="Singer">Singer</option>
+                                
+                                    <option value="30 Oct 1958">30 Oct 1958</option>
+                                
+                                    <option value="Abhijeet Sawant">Abhijeet Sawant</option>
+                                
+                                    <option value="8341">8341</option>
+                                
+                                    <option value="Singer,Actor">Singer,Actor</option>
+                                
+                                    <option value="07 Oct 1981">07 Oct 1981</option>
+                                
+                                    <option value="Abhijit (Kannada Actor)">Abhijit (Kannada Actor)</option>
+                                
+                                    <option value="12519">12519</option>
+                                
+                                    <option value="Actor,Director,Producer">Actor,Director,Producer</option>
+                                
+                                    <option value="30 Jul 1963">30 Jul 1963</option>
+                                
+                                    <option value="Chellakere, Chitradurga district, Karnataka">Chellakere, Chitradurga district, Karnataka</option>
+                                
+                                    <option value="Abhijit Sinha">Abhijit Sinha</option>
+                                
+                                    <option value="48152">48152</option>
+                                
+                                    <option value="25 Apr 1977">25 Apr 1977</option>
+                                
+                                    <option value="Abhilash Joshiy">Abhilash Joshiy</option>
+                                
+                                    <option value="50053">50053</option>
+                                
+                                    <option value="Abhilash Pillai">Abhilash Pillai</option>
+                                
+                                    <option value="50799">50799</option>
+                                
+                                    <option value="Screenplay,Story">Screenplay,Story</option>
+                                
+                                    <option value="Screenplay">Screenplay</option>
+                                
+                                    <option value="17 May 1969">17 May 1969</option>
+                                
+                                    <option value="Abhimann Roy">Abhimann Roy</option>
+                                
+                                    <option value="12117">12117</option>
+                                
+                                    <option value="Music Director,Singer,Lyricst">Music Director,Singer,Lyricst</option>
+                                
+                                    <option value="16 Feb 1979">16 Feb 1979</option>
+                                
+                                    <option value="Abhimanyu Dassani">Abhimanyu Dassani</option>
+                                
+                                    <option value="45429">45429</option>
+                                
+                                    <option value="Abhimanyu Kashinath">Abhimanyu Kashinath</option>
+                                
+                                    <option value="3566">3566</option>
+                                
+                                    <option value="Abhinav Kashyap">Abhinav Kashyap</option>
+                                
+                                    <option value="15298">15298</option>
+                                
+                                    <option value="Director,Singer">Director,Singer</option>
+                                
+                                    <option value="Gorakhpur, Uttar Pradesh">Gorakhpur, Uttar Pradesh</option>
+                                
+                                    <option value="Abhinav Shukla">Abhinav Shukla</option>
+                                
+                                    <option value="32741">32741</option>
+                                
+                                    <option value="27 Sep 1982">27 Sep 1982</option>
+                                
+                                    <option value="Ludhiana, Punjab">Ludhiana, Punjab</option>
+                                
+                                    <option value="Abhinay Vaddi">Abhinay Vaddi</option>
+                                
+                                    <option value="32967">32967</option>
+                                
+                                    <option value="18 Mar 1983">18 Mar 1983</option>
+                                
+                                    <option value="Abhinaya">Abhinaya</option>
+                                
+                                    <option value="30028">30028</option>
+                                
+                                    <option value="13 Nov 1991">13 Nov 1991</option>
+                                
+                                    <option value="Rajahmundry, Andhra Pradesh">Rajahmundry, Andhra Pradesh</option>
+                                
+                                    <option value="mgabhinaya">mgabhinaya</option>
+                                
+                                    <option value="Abhinaya (Old Kannada Actress)">Abhinaya (Old Kannada Actress)</option>
+                                
+                                    <option value="32230">32230</option>
+                                
+                                    <option value="Abhinaya Sri">Abhinaya Sri</option>
+                                
+                                    <option value="4593">4593</option>
+                                
+                                    <option value="25 Mar 1988">25 Mar 1988</option>
+                                
+                                    <option value="Chennai, Tamil Nadu">Chennai, Tamil Nadu</option>
+                                
+                                    <option value="Abhirami">Abhirami</option>
+                                
+                                    <option value="13388">13388</option>
+                                
+                                    <option value="Actress,Singer">Actress,Singer</option>
+                                
+                                    <option value="26 Jul 1983">26 Jul 1983</option>
+                                
+                                    <option value="Abhirami Venkatachalam">Abhirami Venkatachalam</option>
+                                
+                                    <option value="43414">43414</option>
+                                
+                                    <option value="09 Mar 0">09 Mar 0</option>
+                                
+                                    <option value="Chennai, Tamil Nadu.">Chennai, Tamil Nadu.</option>
+                                
+                                    <option value="Abhishek (Telugu Actor)">Abhishek (Telugu Actor)</option>
+                                
+                                    <option value="15637">15637</option>
+                                
+                                    <option value="Abhishek Ambareesh">Abhishek Ambareesh</option>
+                                
+                                    <option value="41078">41078</option>
+                                
+                                    <option value="03 Oct 1993">03 Oct 1993</option>
+                                
+                                    <option value="Bengaluru, Karnataka">Bengaluru, Karnataka</option>
+                                
+                                    <option value="Abhishek Bachchan">Abhishek Bachchan</option>
+                                
+                                    <option value="1925">1925</option>
+                                
+                                    <option value="Actor,Singer,Producer">Actor,Singer,Producer</option>
+                                
+                                    <option value="05 Feb 1976">05 Feb 1976</option>
+                                
+                                    <option value="@juniorbachchan">@juniorbachchan</option>
+                                
+                                    <option value="Abhishek Bannerjee">Abhishek Bannerjee</option>
+                                
+                                    <option value="40119">40119</option>
+                                
+                                    <option value="Actor,Story">Actor,Story</option>
+                                
+                                    <option value="05 May 1985">05 May 1985</option>
+                                
+                                    <option value="Kharagpur, West Bengal">Kharagpur, West Bengal</option>
+                                
+                                    <option value="Abhishek Das">Abhishek Das</option>
+                                
+                                    <option value="41430">41430</option>
+                                
+                                    <option value="Abhishek Jayadeep">Abhishek Jayadeep</option>
+                                
+                                    <option value="62711">62711</option>
+                                
+                                    <option value="Thrissur, Kerala">Thrissur, Kerala</option>
+                                
+                                    <option value="Abhishek Kapoor">Abhishek Kapoor</option>
+                                
+                                    <option value="337">337</option>
+                                
+                                    <option value="Director,Story,Producer">Director,Story,Producer</option>
+                                
+                                    <option value="Abhishek Kapur">Abhishek Kapur</option>
+                                
+                                    <option value="45062">45062</option>
+                                
+                                    <option value="Abhishek kumar">Abhishek kumar</option>
+                                
+                                    <option value="1577">1577</option>
+                                
+                                    <option value="Actor,Editing">Actor,Editing</option>
+                                
+                                    <option value="Abhishek Kumar">Abhishek Kumar</option>
+                                
+                                    <option value="54859">54859</option>
+                                
+                                    <option value="26 Aug 1995">26 Aug 1995</option>
+                                
+                                    <option value="Punjab">Punjab</option>
+                                
+                                    <option value="Abhishek Malhan">Abhishek Malhan</option>
+                                
+                                    <option value="57864">57864</option>
+                                
+                                    <option value="24 May 1997">24 May 1997</option>
+                                
+                                    <option value="Pitampura, Delhi">Pitampura, Delhi</option>
+                                
+                                    <option value="Abhishek Sreekumar">Abhishek Sreekumar</option>
+                                
+                                    <option value="62712">62712</option>
+                                
+                                    <option value="Abi">Abi</option>
+                                
+                                    <option value="15087">15087</option>
+                                
+                                    <option value="Abi Saravanan">Abi Saravanan</option>
+                                
+                                    <option value="44225">44225</option>
+                                
+                                    <option value="Abijeeth Duddala">Abijeeth Duddala</option>
+                                
+                                    <option value="31134">31134</option>
+                                
+                                    <option value="11 Oct 1988">11 Oct 1988</option>
+                                
+                                    <option value="Hyderabad, Andhra Pradesh">Hyderabad, Andhra Pradesh</option>
+                                
+                                    <option value="Abinandhan Ramanujam">Abinandhan Ramanujam</option>
+                                
+                                    <option value="42665">42665</option>
+                                
+                                    <option value="Cinematography">Cinematography</option>
+                                
+                                    <option value="Abishek Raja">Abishek Raja</option>
+                                
+                                    <option value="42455">42455</option>
+                                
+                                    <option value="Actor,Dialogues">Actor,Dialogues</option>
+                                
+                                    <option value="Abrar Zahoor">Abrar Zahoor</option>
+                                
+                                    <option value="36206">36206</option>
+                                
+                                    <option value="Abu Malik">Abu Malik</option>
+                                
+                                    <option value="1008">1008</option>
+                                
+                                    <option value="02 Nov 1960">02 Nov 1960</option>
+                                
+                                    <option value="Abyuktha Manikandan">Abyuktha Manikandan</option>
+                                
+                                    <option value="64268">64268</option>
+                                
+                                    <option value="Achint Kaur">Achint Kaur</option>
+                                
+                                    <option value="1041">1041</option>
+                                
+                                    <option value="Actress,Lyricst">Actress,Lyricst</option>
+                                
+                                    <option value="Achyuth Kumar">Achyuth Kumar</option>
+                                
+                                    <option value="23336">23336</option>
+                                
+                                    <option value="08 Mar 1966">08 Mar 1966</option>
+                                
+                                    <option value="Tiptur, Karnataka">Tiptur, Karnataka</option>
+                                
+                                    <option value="AchyuthChaganti">AchyuthChaganti</option>
+                                
+                                    <option value="Adah Sharma">Adah Sharma</option>
+                                
+                                    <option value="2460">2460</option>
+                                
+                                    <option value="11 May 1992">11 May 1992</option>
+                                
+                                    <option value="Adam Herschman">Adam Herschman</option>
+                                
+                                    <option value="5773">5773</option>
+                                
+                                    <option value="Adam Levine">Adam Levine</option>
+                                
+                                    <option value="34379">34379</option>
+                                
+                                    <option value="18 Mar 1979">18 Mar 1979</option>
+                                
+                                    <option value="Adam Pasha">Adam Pasha</option>
+                                
+                                    <option value="42734">42734</option>
+                                
+                                    <option value="Bangaluru">Bangaluru</option>
+                                
+                                    <option value="Adam Rodriguez">Adam Rodriguez</option>
+                                
+                                    <option value="5473">5473</option>
+                                
+                                    <option value="02 Apr 1975">02 Apr 1975</option>
+                                
+                                    <option value="New York City, New York">New York City, New York</option>
+                                
+                                    <option value="Adam Rothenberg">Adam Rothenberg</option>
+                                
+                                    <option value="9307">9307</option>
+                                
+                                    <option value="Adam Sandler">Adam Sandler</option>
+                                
+                                    <option value="4621">4621</option>
+                                
+                                    <option value="09 Sep 1966">09 Sep 1966</option>
+                                
+                                    <option value="Brooklyn, New York">Brooklyn, New York</option>
+                                
+                                    <option value="Adarsh Balakrishna">Adarsh Balakrishna</option>
+                                
+                                    <option value="25199">25199</option>
+                                
+                                    <option value="10 Feb 1984">10 Feb 1984</option>
+                                
+                                    <option value="Bangalore, Karnatak">Bangalore, Karnatak</option>
+                                
+                                    <option value="AadarshBKrishna">AadarshBKrishna</option>
+                                
+                                    <option value="Adarsh H Eshwarappa">Adarsh H Eshwarappa</option>
+                                
+                                    <option value="37673">37673</option>
+                                
+                                    <option value="Ade">Ade</option>
+                                
+                                    <option value="6932">6932</option>
+                                
+                                    <option value="Adele Romanski">Adele Romanski</option>
+                                
+                                    <option value="37401">37401</option>
+                                
+                            </select>
+                        </div>
+                        <div class="col-2 pb-2">
+                            <button type="button" class="btn btn-primary btn-block" onclick="neighbourhoodHighlight({nodes: []});">Reset Selection</button>
+                        </div>
+                    </div>
+                </div>
+            
+            
+            <div id="mynetwork" class="card-body"></div>
+        </div>
+
+        
+            <div id="loadingBar">
+              <div class="outerBorder">
+                <div id="text">0%</div>
+                <div id="border">
+                  <div id="bar"></div>
+                </div>
+              </div>
+            </div>
+        
+        
+
+        <script type="text/javascript">
+
+              // initialize global variables.
+              var edges;
+              var nodes;
+              var allNodes;
+              var allEdges;
+              var nodeColors;
+              var originalNodes;
+              var network;
+              var container;
+              var options, data;
+              var filter = {
+                  item : '',
+                  property : '',
+                  value : []
+              };
+
+              
+                  new TomSelect("#select-node",{
+                      create: false,
+                      sortField: {
+                          field: "text",
+                          direction: "asc"
+                      }
+                  });
+              
+
+              
+
+              // This method is responsible for drawing the graph, returns the drawn network
+              function drawGraph() {
+                  var container = document.getElementById('mynetwork');
+
+                  
+
+                  // parsing and collecting nodes and edges from the python
+                  nodes = new vis.DataSet([{"color": "#000000", "id": "A Jayan", "label": "A Jayan", "shape": "dot"}, {"color": "#000000", "id": 13282, "label": 13282, "shape": "dot"}, {"color": "#000000", "id": "Producer", "label": "Producer", "shape": "dot"}, {"color": "#000000", "id": "male", "label": "male", "shape": "dot"}, {"color": "#000000", "id": "A Karunakaran", "label": "A Karunakaran", "shape": "dot"}, {"color": "#000000", "id": 4060, "label": 4060, "shape": "dot"}, {"color": "#000000", "id": "Director,Screenplay", "label": "Director,Screenplay", "shape": "dot"}, {"color": "#000000", "id": "Director", "label": "Director", "shape": "dot"}, {"color": "#000000", "id": "IN", "label": "IN", "shape": "dot"}, {"color": "#000000", "id": "A R Rahman", "label": "A R Rahman", "shape": "dot"}, {"color": "#000000", "id": 2362, "label": 2362, "shape": "dot"}, {"color": "#000000", "id": "Music Director,Singer,Lyricst,Producer,Actor,Story", "label": "Music Director,Singer,Lyricst,Producer,Actor,Story", "shape": "dot"}, {"color": "#000000", "id": "Music Director", "label": "Music Director", "shape": "dot"}, {"color": "#000000", "id": "06 Jan 1966", "label": "06 Jan 1966", "shape": "dot"}, {"color": "#000000", "id": "Kodambakkam, Chennai", "label": "Kodambakkam, Chennai", "shape": "dot"}, {"color": "#000000", "id": "arrahman", "label": "arrahman", "shape": "dot"}, {"color": "#000000", "id": "A V Ravi", "label": "A V Ravi", "shape": "dot"}, {"color": "#000000", "id": 24270, "label": 24270, "shape": "dot"}, {"color": "#000000", "id": "Actor", "label": "Actor", "shape": "dot"}, {"color": "#000000", "id": "A Vinoth Kumar", "label": "A Vinoth Kumar", "shape": "dot"}, {"color": "#000000", "id": 50319, "label": 50319, "shape": "dot"}, {"color": "#000000", "id": "dir_vinothkumar", "label": "dir_vinothkumar", "shape": "dot"}, {"color": "#000000", "id": "A.R. Murugadoss", "label": "A.R. Murugadoss", "shape": "dot"}, {"color": "#000000", "id": 2361, "label": 2361, "shape": "dot"}, {"color": "#000000", "id": "Director,Producer,Story,Screenplay", "label": "Director,Producer,Story,Screenplay", "shape": "dot"}, {"color": "#000000", "id": "25 Sep 1974", "label": "25 Sep 1974", "shape": "dot"}, {"color": "#000000", "id": "Trichy, Tamilnadu.", "label": "Trichy, Tamilnadu.", "shape": "dot"}, {"color": "#000000", "id": "ARMurugadoss", "label": "ARMurugadoss", "shape": "dot"}, {"color": "#000000", "id": "Aadesh Shrivastav", "label": "Aadesh Shrivastav", "shape": "dot"}, {"color": "#000000", "id": 2549, "label": 2549, "shape": "dot"}, {"color": "#000000", "id": "Music Director,Singer,Actor", "label": "Music Director,Singer,Actor", "shape": "dot"}, {"color": "#000000", "id": "04 Sep 1966", "label": "04 Sep 1966", "shape": "dot"}, {"color": "#000000", "id": "Aadhi", "label": "Aadhi", "shape": "dot"}, {"color": "#000000", "id": 9177, "label": 9177, "shape": "dot"}, {"color": "#000000", "id": "14 Dec 1982", "label": "14 Dec 1982", "shape": "dot"}, {"color": "#000000", "id": "Chennai", "label": "Chennai", "shape": "dot"}, {"color": "#000000", "id": "Aadhira Pandilakshmi", "label": "Aadhira Pandilakshmi", "shape": "dot"}, {"color": "#000000", "id": 43567, "label": 43567, "shape": "dot"}, {"color": "#000000", "id": "Actress", "label": "Actress", "shape": "dot"}, {"color": "#000000", "id": "female", "label": "female", "shape": "dot"}, {"color": "#000000", "id": "22 Apr 1978", "label": "22 Apr 1978", "shape": "dot"}, {"color": "#000000", "id": "AadhiraOfficial", "label": "AadhiraOfficial", "shape": "dot"}, {"color": "#000000", "id": "Aadi Saikumar", "label": "Aadi Saikumar", "shape": "dot"}, {"color": "#000000", "id": 23530, "label": 23530, "shape": "dot"}, {"color": "#000000", "id": "23 Dec 1987", "label": "23 Dec 1987", "shape": "dot"}, {"color": "#000000", "id": "Madras, Tamil Nadu", "label": "Madras, Tamil Nadu", "shape": "dot"}, {"color": "#000000", "id": "Aaditi Pohankar", "label": "Aaditi Pohankar", "shape": "dot"}, {"color": "#000000", "id": 37447, "label": 37447, "shape": "dot"}, {"color": "#000000", "id": "Aahil Khan", "label": "Aahil Khan", "shape": "dot"}, {"color": "#000000", "id": 52689, "label": 52689, "shape": "dot"}, {"color": "#000000", "id": "Aajeedh Khalique", "label": "Aajeedh Khalique", "shape": "dot"}, {"color": "#000000", "id": 48033, "label": 48033, "shape": "dot"}, {"color": "#000000", "id": "Actor,Singer", "label": "Actor,Singer", "shape": "dot"}, {"color": "#000000", "id": "Aakanksha Singh", "label": "Aakanksha Singh", "shape": "dot"}, {"color": "#000000", "id": 37793, "label": 37793, "shape": "dot"}, {"color": "#000000", "id": "30 Jul 1990", "label": "30 Jul 1990", "shape": "dot"}, {"color": "#000000", "id": "Jaipur, Rajasthan", "label": "Jaipur, Rajasthan", "shape": "dot"}, {"color": "#000001", "id": "Aaliya Siddiqui", "label": "Aaliya Siddiqui", "shape": "dot"}, {"color": "#000001", "id": 53803, "label": 53803, "shape": "dot"}, {"color": "#000001", "id": "18 Apr 1977", "label": "18 Apr 1977", "shape": "dot"}, {"color": "#000001", "id": "Jabalpur, Madhya Pradesh", "label": "Jabalpur, Madhya Pradesh", "shape": "dot"}, {"color": "#000001", "id": "ASiddiqui2020", "label": "ASiddiqui2020", "shape": "dot"}, {"color": "#000000", "id": "Aaman Devgan", "label": "Aaman Devgan", "shape": "dot"}, {"color": "#000000", "id": 64809, "label": 64809, "shape": "dot"}, {"color": "#000000", "id": "18 Feb 0", "label": "18 Feb 0", "shape": "dot"}, {"color": "#000000", "id": "Aamir Ali Malik", "label": "Aamir Ali Malik", "shape": "dot"}, {"color": "#000000", "id": 23174, "label": 23174, "shape": "dot"}, {"color": "#000000", "id": "01 Sep 1977", "label": "01 Sep 1977", "shape": "dot"}, {"color": "#000000", "id": "Mumbai", "label": "Mumbai", "shape": "dot"}, {"color": "#000000", "id": "Aamir Bashir", "label": "Aamir Bashir", "shape": "dot"}, {"color": "#000000", "id": 2413, "label": 2413, "shape": "dot"}, {"color": "#000000", "id": "Kashmir", "label": "Kashmir", "shape": "dot"}, {"color": "#000000", "id": "Aamir Khan", "label": "Aamir Khan", "shape": "dot"}, {"color": "#000000", "id": 2360, "label": 2360, "shape": "dot"}, {"color": "#000000", "id": "Actor,Producer,Singer,Director", "label": "Actor,Producer,Singer,Director", "shape": "dot"}, {"color": "#000000", "id": "14 Mar 1965", "label": "14 Mar 1965", "shape": "dot"}, {"color": "#000000", "id": "Mumbai, Maharashtra", "label": "Mumbai, Maharashtra", "shape": "dot"}, {"color": "#000000", "id": "Aamna Sharif", "label": "Aamna Sharif", "shape": "dot"}, {"color": "#000000", "id": 10475, "label": 10475, "shape": "dot"}, {"color": "#000000", "id": "16 Jul 1982", "label": "16 Jul 1982", "shape": "dot"}, {"color": "#000000", "id": "Aanchal Goswami", "label": "Aanchal Goswami", "shape": "dot"}, {"color": "#000000", "id": 57655, "label": 57655, "shape": "dot"}, {"color": "#000000", "id": "Aanchal Singh", "label": "Aanchal Singh", "shape": "dot"}, {"color": "#000000", "id": 29864, "label": 29864, "shape": "dot"}, {"color": "#000000", "id": "05 Apr 1992", "label": "05 Apr 1992", "shape": "dot"}, {"color": "#000000", "id": "Chandigarh", "label": "Chandigarh", "shape": "dot"}, {"color": "#000000", "id": "Aaradhya Devi", "label": "Aaradhya Devi", "shape": "dot"}, {"color": "#000000", "id": 61059, "label": 61059, "shape": "dot"}, {"color": "#000000", "id": "Kottayam", "label": "Kottayam", "shape": "dot"}, {"color": "#000000", "id": "IamAaradhyaDevi", "label": "IamAaradhyaDevi", "shape": "dot"}, {"color": "#000000", "id": "Aarathi (Kannada Actress)", "label": "Aarathi (Kannada Actress)", "shape": "dot"}, {"color": "#000000", "id": 18671, "label": 18671, "shape": "dot"}, {"color": "#000000", "id": "Actress,Producer", "label": "Actress,Producer", "shape": "dot"}, {"color": "#000000", "id": "Aari (Tamil Actor)", "label": "Aari (Tamil Actor)", "shape": "dot"}, {"color": "#000000", "id": 27782, "label": 27782, "shape": "dot"}, {"color": "#000000", "id": "Aarjavee", "label": "Aarjavee", "shape": "dot"}, {"color": "#000000", "id": 48484, "label": 48484, "shape": "dot"}, {"color": "#000000", "id": "Aaron Eckhart", "label": "Aaron Eckhart", "shape": "dot"}, {"color": "#000000", "id": 5365, "label": 5365, "shape": "dot"}, {"color": "#000000", "id": "12 Mar 1968", "label": "12 Mar 1968", "shape": "dot"}, {"color": "#000000", "id": "Cupertino, California", "label": "Cupertino, California", "shape": "dot"}, {"color": "#000000", "id": "US", "label": "US", "shape": "dot"}, {"color": "#000000", "id": "Aaron Johnson", "label": "Aaron Johnson", "shape": "dot"}, {"color": "#000000", "id": 9183, "label": 9183, "shape": "dot"}, {"color": "#000000", "id": "13 Jun 1990", "label": "13 Jun 1990", "shape": "dot"}, {"color": "#000000", "id": "High Wycombe, England", "label": "High Wycombe, England", "shape": "dot"}, {"color": "#000000", "id": "GB", "label": "GB", "shape": "dot"}, {"color": "#000000", "id": "Aaron Paul", "label": "Aaron Paul", "shape": "dot"}, {"color": "#000000", "id": 8988, "label": 8988, "shape": "dot"}, {"color": "#000000", "id": "29 Aug 1979", "label": "29 Aug 1979", "shape": "dot"}, {"color": "#000000", "id": "Emmett, Idaho", "label": "Emmett, Idaho", "shape": "dot"}, {"color": "#000000", "id": "Aaron Yoo", "label": "Aaron Yoo", "shape": "dot"}, {"color": "#000000", "id": 7380, "label": 7380, "shape": "dot"}, {"color": "#000000", "id": "12 May 1979", "label": "12 May 1979", "shape": "dot"}, {"color": "#000000", "id": "New Jersey", "label": "New Jersey", "shape": "dot"}, {"color": "#000000", "id": "Aarthi", "label": "Aarthi", "shape": "dot"}, {"color": "#000000", "id": 11134, "label": 11134, "shape": "dot"}, {"color": "#000000", "id": "09 Nov 1987", "label": "09 Nov 1987", "shape": "dot"}, {"color": "#000000", "id": "Aarti Chhabria", "label": "Aarti Chhabria", "shape": "dot"}, {"color": "#000000", "id": 929, "label": 929, "shape": "dot"}, {"color": "#000000", "id": "21 Nov 1982", "label": "21 Nov 1982", "shape": "dot"}, {"color": "#000000", "id": "Aartii Naagpal", "label": "Aartii Naagpal", "shape": "dot"}, {"color": "#000000", "id": 58514, "label": 58514, "shape": "dot"}, {"color": "#000000", "id": "10 Nov 1979", "label": "10 Nov 1979", "shape": "dot"}, {"color": "#000000", "id": "Mumbai, India", "label": "Mumbai, India", "shape": "dot"}, {"color": "#000000", "id": "aartiinaagpal", "label": "aartiinaagpal", "shape": "dot"}, {"color": "#000000", "id": "Aarun Nagar", "label": "Aarun Nagar", "shape": "dot"}, {"color": "#000000", "id": 46760, "label": 46760, "shape": "dot"}, {"color": "#000000", "id": "Actor,Director,Editing", "label": "Actor,Director,Editing", "shape": "dot"}, {"color": "#000000", "id": "02 Aug 1982", "label": "02 Aug 1982", "shape": "dot"}, {"color": "#000000", "id": "Aashika Bhatia", "label": "Aashika Bhatia", "shape": "dot"}, {"color": "#000000", "id": 58498, "label": 58498, "shape": "dot"}, {"color": "#000000", "id": "15 Dec 1999", "label": "15 Dec 1999", "shape": "dot"}, {"color": "#000000", "id": "Surat, Gujarat", "label": "Surat, Gujarat", "shape": "dot"}, {"color": "#000000", "id": "Aashiq Abu", "label": "Aashiq Abu", "shape": "dot"}, {"color": "#000000", "id": 9620, "label": 9620, "shape": "dot"}, {"color": "#000000", "id": "Director,Producer,Cinematography,Actor", "label": "Director,Producer,Cinematography,Actor", "shape": "dot"}, {"color": "#000000", "id": "12 Apr 1978", "label": "12 Apr 1978", "shape": "dot"}, {"color": "#000000", "id": "Aasif Khan", "label": "Aasif Khan", "shape": "dot"}, {"color": "#000000", "id": 44328, "label": 44328, "shape": "dot"}, {"color": "#000000", "id": "Aasif Mandvi", "label": "Aasif Mandvi", "shape": "dot"}, {"color": "#000000", "id": 8880, "label": 8880, "shape": "dot"}, {"color": "#000000", "id": "05 Mar 1966", "label": "05 Mar 1966", "shape": "dot"}, {"color": "#000000", "id": "Aathmika", "label": "Aathmika", "shape": "dot"}, {"color": "#000000", "id": 37131, "label": 37131, "shape": "dot"}, {"color": "#000000", "id": "09 Feb 1993", "label": "09 Feb 1993", "shape": "dot"}, {"color": "#000000", "id": "Aayush Sharma", "label": "Aayush Sharma", "shape": "dot"}, {"color": "#000000", "id": 39725, "label": 39725, "shape": "dot"}, {"color": "#000000", "id": "26 Oct 1990", "label": "26 Oct 1990", "shape": "dot"}, {"color": "#000000", "id": "Mandi, Himachal Pradesh", "label": "Mandi, Himachal Pradesh", "shape": "dot"}, {"color": "#000000", "id": "Aayushi Jaiswal", "label": "Aayushi Jaiswal", "shape": "dot"}, {"color": "#000000", "id": 58921, "label": 58921, "shape": "dot"}, {"color": "#000000", "id": "27 Aug 1996", "label": "27 Aug 1996", "shape": "dot"}, {"color": "#000000", "id": "Lucknow, Uttar Pradesh", "label": "Lucknow, Uttar Pradesh", "shape": "dot"}, {"color": "#000000", "id": "Abbas (Tamil Actor)", "label": "Abbas (Tamil Actor)", "shape": "dot"}, {"color": "#000000", "id": 3893, "label": 3893, "shape": "dot"}, {"color": "#000000", "id": "21 May 1975", "label": "21 May 1975", "shape": "dot"}, {"color": "#000000", "id": "Calcutta", "label": "Calcutta", "shape": "dot"}, {"color": "#000000", "id": "Abbas Hassan", "label": "Abbas Hassan", "shape": "dot"}, {"color": "#000000", "id": 27991, "label": 27991, "shape": "dot"}, {"color": "#000000", "id": "Canada", "label": "Canada", "shape": "dot"}, {"color": "#000000", "id": "PK", "label": "PK", "shape": "dot"}, {"color": "#000000", "id": "Abbas Tyrewala", "label": "Abbas Tyrewala", "shape": "dot"}, {"color": "#000000", "id": 898, "label": 898, "shape": "dot"}, {"color": "#000000", "id": "Lyricst,Director,Dialogues", "label": "Lyricst,Director,Dialogues", "shape": "dot"}, {"color": "#000000", "id": "Lyricst", "label": "Lyricst", "shape": "dot"}, {"color": "#000000", "id": "Abdu Rozik", "label": "Abdu Rozik", "shape": "dot"}, {"color": "#000000", "id": 54271, "label": 54271, "shape": "dot"}, {"color": "#000000", "id": "Abhay Bethiganti", "label": "Abhay Bethiganti", "shape": "dot"}, {"color": "#000000", "id": 39409, "label": 39409, "shape": "dot"}, {"color": "#000000", "id": "Actor,Director", "label": "Actor,Director", "shape": "dot"}, {"color": "#000000", "id": "01 Nov 1991", "label": "01 Nov 1991", "shape": "dot"}, {"color": "#000000", "id": "Siddipet, Telangana", "label": "Siddipet, Telangana", "shape": "dot"}, {"color": "#000000", "id": "Abhay Deol", "label": "Abhay Deol", "shape": "dot"}, {"color": "#000000", "id": 48, "label": 48, "shape": "dot"}, {"color": "#000000", "id": "Actor,Producer", "label": "Actor,Producer", "shape": "dot"}, {"color": "#000000", "id": "15 Mar 1976", "label": "15 Mar 1976", "shape": "dot"}, {"color": "#000000", "id": "Abhay Simha", "label": "Abhay Simha", "shape": "dot"}, {"color": "#000000", "id": 15525, "label": 15525, "shape": "dot"}, {"color": "#000000", "id": "Abhi (Kannada Actor)", "label": "Abhi (Kannada Actor)", "shape": "dot"}, {"color": "#000000", "id": 41537, "label": 41537, "shape": "dot"}, {"color": "#000000", "id": "Abhi Basavaraj", "label": "Abhi Basavaraj", "shape": "dot"}, {"color": "#000000", "id": 62183, "label": 62183, "shape": "dot"}, {"color": "#000000", "id": "Abhijeet Bhattacharya", "label": "Abhijeet Bhattacharya", "shape": "dot"}, {"color": "#000000", "id": 123, "label": 123, "shape": "dot"}, {"color": "#000000", "id": "Singer", "label": "Singer", "shape": "dot"}, {"color": "#000000", "id": "30 Oct 1958", "label": "30 Oct 1958", "shape": "dot"}, {"color": "#000000", "id": "Abhijeet Sawant", "label": "Abhijeet Sawant", "shape": "dot"}, {"color": "#000000", "id": 8341, "label": 8341, "shape": "dot"}, {"color": "#000000", "id": "Singer,Actor", "label": "Singer,Actor", "shape": "dot"}, {"color": "#000000", "id": "07 Oct 1981", "label": "07 Oct 1981", "shape": "dot"}, {"color": "#000000", "id": "Abhijit (Kannada Actor)", "label": "Abhijit (Kannada Actor)", "shape": "dot"}, {"color": "#000000", "id": 12519, "label": 12519, "shape": "dot"}, {"color": "#000000", "id": "Actor,Director,Producer", "label": "Actor,Director,Producer", "shape": "dot"}, {"color": "#000000", "id": "30 Jul 1963", "label": "30 Jul 1963", "shape": "dot"}, {"color": "#000000", "id": "Chellakere, Chitradurga district, Karnataka", "label": "Chellakere, Chitradurga district, Karnataka", "shape": "dot"}, {"color": "#000000", "id": "Abhijit Sinha", "label": "Abhijit Sinha", "shape": "dot"}, {"color": "#000000", "id": 48152, "label": 48152, "shape": "dot"}, {"color": "#000000", "id": "25 Apr 1977", "label": "25 Apr 1977", "shape": "dot"}, {"color": "#000000", "id": "Abhilash Joshiy", "label": "Abhilash Joshiy", "shape": "dot"}, {"color": "#000000", "id": 50053, "label": 50053, "shape": "dot"}, {"color": "#000000", "id": "Abhilash Pillai", "label": "Abhilash Pillai", "shape": "dot"}, {"color": "#000000", "id": 50799, "label": 50799, "shape": "dot"}, {"color": "#000000", "id": "Screenplay,Story", "label": "Screenplay,Story", "shape": "dot"}, {"color": "#000000", "id": "Screenplay", "label": "Screenplay", "shape": "dot"}, {"color": "#000000", "id": "17 May 1969", "label": "17 May 1969", "shape": "dot"}, {"color": "#000000", "id": "Abhimann Roy", "label": "Abhimann Roy", "shape": "dot"}, {"color": "#000000", "id": 12117, "label": 12117, "shape": "dot"}, {"color": "#000000", "id": "Music Director,Singer,Lyricst", "label": "Music Director,Singer,Lyricst", "shape": "dot"}, {"color": "#000000", "id": "16 Feb 1979", "label": "16 Feb 1979", "shape": "dot"}, {"color": "#000000", "id": "Abhimanyu Dassani", "label": "Abhimanyu Dassani", "shape": "dot"}, {"color": "#000000", "id": 45429, "label": 45429, "shape": "dot"}, {"color": "#000000", "id": "Abhimanyu Kashinath", "label": "Abhimanyu Kashinath", "shape": "dot"}, {"color": "#000000", "id": 3566, "label": 3566, "shape": "dot"}, {"color": "#000000", "id": "Abhinav Kashyap", "label": "Abhinav Kashyap", "shape": "dot"}, {"color": "#000000", "id": 15298, "label": 15298, "shape": "dot"}, {"color": "#000000", "id": "Director,Singer", "label": "Director,Singer", "shape": "dot"}, {"color": "#000000", "id": "Gorakhpur, Uttar Pradesh", "label": "Gorakhpur, Uttar Pradesh", "shape": "dot"}, {"color": "#000000", "id": "Abhinav Shukla", "label": "Abhinav Shukla", "shape": "dot"}, {"color": "#000000", "id": 32741, "label": 32741, "shape": "dot"}, {"color": "#000000", "id": "27 Sep 1982", "label": "27 Sep 1982", "shape": "dot"}, {"color": "#000000", "id": "Ludhiana, Punjab", "label": "Ludhiana, Punjab", "shape": "dot"}, {"color": "#000000", "id": "Abhinay Vaddi", "label": "Abhinay Vaddi", "shape": "dot"}, {"color": "#000000", "id": 32967, "label": 32967, "shape": "dot"}, {"color": "#000000", "id": "18 Mar 1983", "label": "18 Mar 1983", "shape": "dot"}, {"color": "#000000", "id": "Abhinaya", "label": "Abhinaya", "shape": "dot"}, {"color": "#000000", "id": 30028, "label": 30028, "shape": "dot"}, {"color": "#000000", "id": "13 Nov 1991", "label": "13 Nov 1991", "shape": "dot"}, {"color": "#000000", "id": "Rajahmundry, Andhra Pradesh", "label": "Rajahmundry, Andhra Pradesh", "shape": "dot"}, {"color": "#000000", "id": "mgabhinaya", "label": "mgabhinaya", "shape": "dot"}, {"color": "#000000", "id": "Abhinaya (Old Kannada Actress)", "label": "Abhinaya (Old Kannada Actress)", "shape": "dot"}, {"color": "#000000", "id": 32230, "label": 32230, "shape": "dot"}, {"color": "#000000", "id": "Abhinaya Sri", "label": "Abhinaya Sri", "shape": "dot"}, {"color": "#000000", "id": 4593, "label": 4593, "shape": "dot"}, {"color": "#000000", "id": "25 Mar 1988", "label": "25 Mar 1988", "shape": "dot"}, {"color": "#000000", "id": "Chennai, Tamil Nadu", "label": "Chennai, Tamil Nadu", "shape": "dot"}, {"color": "#000000", "id": "Abhirami", "label": "Abhirami", "shape": "dot"}, {"color": "#000000", "id": 13388, "label": 13388, "shape": "dot"}, {"color": "#000000", "id": "Actress,Singer", "label": "Actress,Singer", "shape": "dot"}, {"color": "#000000", "id": "26 Jul 1983", "label": "26 Jul 1983", "shape": "dot"}, {"color": "#000000", "id": "Abhirami Venkatachalam", "label": "Abhirami Venkatachalam", "shape": "dot"}, {"color": "#000000", "id": 43414, "label": 43414, "shape": "dot"}, {"color": "#000000", "id": "09 Mar 0", "label": "09 Mar 0", "shape": "dot"}, {"color": "#000000", "id": "Chennai, Tamil Nadu.", "label": "Chennai, Tamil Nadu.", "shape": "dot"}, {"color": "#000000", "id": "Abhishek (Telugu Actor)", "label": "Abhishek (Telugu Actor)", "shape": "dot"}, {"color": "#000000", "id": 15637, "label": 15637, "shape": "dot"}, {"color": "#000000", "id": "Abhishek Ambareesh", "label": "Abhishek Ambareesh", "shape": "dot"}, {"color": "#000000", "id": 41078, "label": 41078, "shape": "dot"}, {"color": "#000000", "id": "03 Oct 1993", "label": "03 Oct 1993", "shape": "dot"}, {"color": "#000000", "id": "Bengaluru, Karnataka", "label": "Bengaluru, Karnataka", "shape": "dot"}, {"color": "#000000", "id": "Abhishek Bachchan", "label": "Abhishek Bachchan", "shape": "dot"}, {"color": "#000000", "id": 1925, "label": 1925, "shape": "dot"}, {"color": "#000000", "id": "Actor,Singer,Producer", "label": "Actor,Singer,Producer", "shape": "dot"}, {"color": "#000000", "id": "05 Feb 1976", "label": "05 Feb 1976", "shape": "dot"}, {"color": "#000000", "id": "@juniorbachchan", "label": "@juniorbachchan", "shape": "dot"}, {"color": "#000000", "id": "Abhishek Bannerjee", "label": "Abhishek Bannerjee", "shape": "dot"}, {"color": "#000000", "id": 40119, "label": 40119, "shape": "dot"}, {"color": "#000000", "id": "Actor,Story", "label": "Actor,Story", "shape": "dot"}, {"color": "#000000", "id": "05 May 1985", "label": "05 May 1985", "shape": "dot"}, {"color": "#000000", "id": "Kharagpur, West Bengal", "label": "Kharagpur, West Bengal", "shape": "dot"}, {"color": "#000000", "id": "Abhishek Das", "label": "Abhishek Das", "shape": "dot"}, {"color": "#000000", "id": 41430, "label": 41430, "shape": "dot"}, {"color": "#000000", "id": "Abhishek Jayadeep", "label": "Abhishek Jayadeep", "shape": "dot"}, {"color": "#000000", "id": 62711, "label": 62711, "shape": "dot"}, {"color": "#000000", "id": "Thrissur, Kerala", "label": "Thrissur, Kerala", "shape": "dot"}, {"color": "#000000", "id": "Abhishek Kapoor", "label": "Abhishek Kapoor", "shape": "dot"}, {"color": "#000000", "id": 337, "label": 337, "shape": "dot"}, {"color": "#000000", "id": "Director,Story,Producer", "label": "Director,Story,Producer", "shape": "dot"}, {"color": "#000000", "id": "Abhishek Kapur", "label": "Abhishek Kapur", "shape": "dot"}, {"color": "#000000", "id": 45062, "label": 45062, "shape": "dot"}, {"color": "#000000", "id": "Abhishek kumar", "label": "Abhishek kumar", "shape": "dot"}, {"color": "#000000", "id": 1577, "label": 1577, "shape": "dot"}, {"color": "#000000", "id": "Actor,Editing", "label": "Actor,Editing", "shape": "dot"}, {"color": "#000000", "id": "Abhishek Kumar", "label": "Abhishek Kumar", "shape": "dot"}, {"color": "#000000", "id": 54859, "label": 54859, "shape": "dot"}, {"color": "#000000", "id": "26 Aug 1995", "label": "26 Aug 1995", "shape": "dot"}, {"color": "#000000", "id": "Punjab", "label": "Punjab", "shape": "dot"}, {"color": "#000000", "id": "Abhishek Malhan", "label": "Abhishek Malhan", "shape": "dot"}, {"color": "#000000", "id": 57864, "label": 57864, "shape": "dot"}, {"color": "#000000", "id": "24 May 1997", "label": "24 May 1997", "shape": "dot"}, {"color": "#000000", "id": "Pitampura, Delhi", "label": "Pitampura, Delhi", "shape": "dot"}, {"color": "#000000", "id": "Abhishek Sreekumar", "label": "Abhishek Sreekumar", "shape": "dot"}, {"color": "#000000", "id": 62712, "label": 62712, "shape": "dot"}, {"color": "#000000", "id": "Abi", "label": "Abi", "shape": "dot"}, {"color": "#000000", "id": 15087, "label": 15087, "shape": "dot"}, {"color": "#000000", "id": "Abi Saravanan", "label": "Abi Saravanan", "shape": "dot"}, {"color": "#000000", "id": 44225, "label": 44225, "shape": "dot"}, {"color": "#000000", "id": "Abijeeth Duddala", "label": "Abijeeth Duddala", "shape": "dot"}, {"color": "#000000", "id": 31134, "label": 31134, "shape": "dot"}, {"color": "#000000", "id": "11 Oct 1988", "label": "11 Oct 1988", "shape": "dot"}, {"color": "#000000", "id": "Hyderabad, Andhra Pradesh", "label": "Hyderabad, Andhra Pradesh", "shape": "dot"}, {"color": "#000000", "id": "Abinandhan Ramanujam", "label": "Abinandhan Ramanujam", "shape": "dot"}, {"color": "#000000", "id": 42665, "label": 42665, "shape": "dot"}, {"color": "#000000", "id": "Cinematography", "label": "Cinematography", "shape": "dot"}, {"color": "#000000", "id": "Abishek Raja", "label": "Abishek Raja", "shape": "dot"}, {"color": "#000000", "id": 42455, "label": 42455, "shape": "dot"}, {"color": "#000000", "id": "Actor,Dialogues", "label": "Actor,Dialogues", "shape": "dot"}, {"color": "#000000", "id": "Abrar Zahoor", "label": "Abrar Zahoor", "shape": "dot"}, {"color": "#000000", "id": 36206, "label": 36206, "shape": "dot"}, {"color": "#000000", "id": "Abu Malik", "label": "Abu Malik", "shape": "dot"}, {"color": "#000000", "id": 1008, "label": 1008, "shape": "dot"}, {"color": "#000000", "id": "02 Nov 1960", "label": "02 Nov 1960", "shape": "dot"}, {"color": "#000000", "id": "Abyuktha Manikandan", "label": "Abyuktha Manikandan", "shape": "dot"}, {"color": "#000000", "id": 64268, "label": 64268, "shape": "dot"}, {"color": "#000000", "id": "Achint Kaur", "label": "Achint Kaur", "shape": "dot"}, {"color": "#000000", "id": 1041, "label": 1041, "shape": "dot"}, {"color": "#000000", "id": "Actress,Lyricst", "label": "Actress,Lyricst", "shape": "dot"}, {"color": "#000000", "id": "Achyuth Kumar", "label": "Achyuth Kumar", "shape": "dot"}, {"color": "#000000", "id": 23336, "label": 23336, "shape": "dot"}, {"color": "#000000", "id": "08 Mar 1966", "label": "08 Mar 1966", "shape": "dot"}, {"color": "#000000", "id": "Tiptur, Karnataka", "label": "Tiptur, Karnataka", "shape": "dot"}, {"color": "#000000", "id": "AchyuthChaganti", "label": "AchyuthChaganti", "shape": "dot"}, {"color": "#000000", "id": "Adah Sharma", "label": "Adah Sharma", "shape": "dot"}, {"color": "#000000", "id": 2460, "label": 2460, "shape": "dot"}, {"color": "#000000", "id": "11 May 1992", "label": "11 May 1992", "shape": "dot"}, {"color": "#000000", "id": "Adam Herschman", "label": "Adam Herschman", "shape": "dot"}, {"color": "#000000", "id": 5773, "label": 5773, "shape": "dot"}, {"color": "#000000", "id": "Adam Levine", "label": "Adam Levine", "shape": "dot"}, {"color": "#000000", "id": 34379, "label": 34379, "shape": "dot"}, {"color": "#000000", "id": "18 Mar 1979", "label": "18 Mar 1979", "shape": "dot"}, {"color": "#000000", "id": "Adam Pasha", "label": "Adam Pasha", "shape": "dot"}, {"color": "#000000", "id": 42734, "label": 42734, "shape": "dot"}, {"color": "#000000", "id": "Bangaluru", "label": "Bangaluru", "shape": "dot"}, {"color": "#000000", "id": "Adam Rodriguez", "label": "Adam Rodriguez", "shape": "dot"}, {"color": "#000000", "id": 5473, "label": 5473, "shape": "dot"}, {"color": "#000000", "id": "02 Apr 1975", "label": "02 Apr 1975", "shape": "dot"}, {"color": "#000000", "id": "New York City, New York", "label": "New York City, New York", "shape": "dot"}, {"color": "#000000", "id": "Adam Rothenberg", "label": "Adam Rothenberg", "shape": "dot"}, {"color": "#000000", "id": 9307, "label": 9307, "shape": "dot"}, {"color": "#000000", "id": "Adam Sandler", "label": "Adam Sandler", "shape": "dot"}, {"color": "#000000", "id": 4621, "label": 4621, "shape": "dot"}, {"color": "#000000", "id": "09 Sep 1966", "label": "09 Sep 1966", "shape": "dot"}, {"color": "#000000", "id": "Brooklyn, New York", "label": "Brooklyn, New York", "shape": "dot"}, {"color": "#000000", "id": "Adarsh Balakrishna", "label": "Adarsh Balakrishna", "shape": "dot"}, {"color": "#000000", "id": 25199, "label": 25199, "shape": "dot"}, {"color": "#000000", "id": "10 Feb 1984", "label": "10 Feb 1984", "shape": "dot"}, {"color": "#000000", "id": "Bangalore, Karnatak", "label": "Bangalore, Karnatak", "shape": "dot"}, {"color": "#000000", "id": "AadarshBKrishna", "label": "AadarshBKrishna", "shape": "dot"}, {"color": "#000000", "id": "Adarsh H Eshwarappa", "label": "Adarsh H Eshwarappa", "shape": "dot"}, {"color": "#000000", "id": 37673, "label": 37673, "shape": "dot"}, {"color": "#000000", "id": "Ade", "label": "Ade", "shape": "dot"}, {"color": "#000000", "id": 6932, "label": 6932, "shape": "dot"}, {"color": "#000000", "id": "Adele Romanski", "label": "Adele Romanski", "shape": "dot"}, {"color": "#000000", "id": 37401, "label": 37401, "shape": "dot"}]);
+                  edges = new vis.DataSet([{"from": "A Jayan", "to": 13282}, {"from": "A Jayan", "to": "Producer"}, {"from": "A Jayan", "to": "male"}, {"from": "Producer", "to": "Aaliya Siddiqui"}, {"from": "Producer", "to": "Abhinav Shukla"}, {"from": "Producer", "to": "Adele Romanski"}, {"from": "male", "to": "A Karunakaran"}, {"from": "male", "to": "A R Rahman"}, {"from": "male", "to": "A V Ravi"}, {"from": "male", "to": "A Vinoth Kumar"}, {"from": "male", "to": "A.R. Murugadoss"}, {"from": "male", "to": "Aadesh Shrivastav"}, {"from": "male", "to": "Aadhi"}, {"from": "male", "to": "Aadi Saikumar"}, {"from": "male", "to": "Aahil Khan"}, {"from": "male", "to": "Aajeedh Khalique"}, {"from": "male", "to": "Aaman Devgan"}, {"from": "male", "to": "Aamir Ali Malik"}, {"from": "male", "to": "Aamir Bashir"}, {"from": "male", "to": "Aamir Khan"}, {"from": "male", "to": "Aari (Tamil Actor)"}, {"from": "male", "to": "Aaron Eckhart"}, {"from": "male", "to": "Aaron Johnson"}, {"from": "male", "to": "Aaron Paul"}, {"from": "male", "to": "Aaron Yoo"}, {"from": "male", "to": "Aarun Nagar"}, {"from": "male", "to": "Aasif Khan"}, {"from": "male", "to": "Aasif Mandvi"}, {"from": "male", "to": "Aayush Sharma"}, {"from": "male", "to": "Abbas (Tamil Actor)"}, {"from": "male", "to": "Abbas Hassan"}, {"from": "male", "to": "Abbas Tyrewala"}, {"from": "male", "to": "Abdu Rozik"}, {"from": "male", "to": "Abhay Bethiganti"}, {"from": "male", "to": "Abhay Deol"}, {"from": "male", "to": "Abhay Simha"}, {"from": "male", "to": "Abhi (Kannada Actor)"}, {"from": "male", "to": "Abhi Basavaraj"}, {"from": "male", "to": "Abhijeet Bhattacharya"}, {"from": "male", "to": "Abhijeet Sawant"}, {"from": "male", "to": "Abhijit (Kannada Actor)"}, {"from": "male", "to": "Abhijit Sinha"}, {"from": "male", "to": "Abhilash Joshiy"}, {"from": "male", "to": "Abhilash Pillai"}, {"from": "male", "to": "Abhimanyu Dassani"}, {"from": "male", "to": "Abhimanyu Kashinath"}, {"from": "male", "to": "Abhinav Kashyap"}, {"from": "male", "to": "Abhinav Shukla"}, {"from": "male", "to": "Abhinay Vaddi"}, {"from": "male", "to": "Abhishek (Telugu Actor)"}, {"from": "male", "to": "Abhishek Ambareesh"}, {"from": "male", "to": "Abhishek Bachchan"}, {"from": "male", "to": "Abhishek Bannerjee"}, {"from": "male", "to": "Abhishek Das"}, {"from": "male", "to": "Abhishek Kapoor"}, {"from": "male", "to": "Abhishek Kapur"}, {"from": "male", "to": "Abhishek kumar"}, {"from": "male", "to": "Abhishek Kumar"}, {"from": "male", "to": "Abhishek Malhan"}, {"from": "male", "to": "Abhishek Sreekumar"}, {"from": "male", "to": "Abi Saravanan"}, {"from": "male", "to": "Abijeeth Duddala"}, {"from": "male", "to": "Abinandhan Ramanujam"}, {"from": "male", "to": "Abishek Raja"}, {"from": "male", "to": "Abu Malik"}, {"from": "male", "to": "Achyuth Kumar"}, {"from": "male", "to": "Adam Herschman"}, {"from": "male", "to": "Adam Levine"}, {"from": "male", "to": "Adam Rodriguez"}, {"from": "male", "to": "Adam Rothenberg"}, {"from": "male", "to": "Adam Sandler"}, {"from": "male", "to": "Adarsh Balakrishna"}, {"from": "male", "to": "Adarsh H Eshwarappa"}, {"from": "male", "to": "Ade"}, {"from": "A Karunakaran", "to": 4060}, {"from": "A Karunakaran", "to": "Director,Screenplay"}, {"from": "A Karunakaran", "to": "Director"}, {"from": "A Karunakaran", "to": "IN"}, {"from": "Director", "to": "A Vinoth Kumar"}, {"from": "Director", "to": "A.R. Murugadoss"}, {"from": "Director", "to": "Aashiq Abu"}, {"from": "Director", "to": "Abhay Simha"}, {"from": "Director", "to": "Abhi Basavaraj"}, {"from": "Director", "to": "Abhilash Joshiy"}, {"from": "Director", "to": "Abhinav Kashyap"}, {"from": "Director", "to": "Abhishek Kapoor"}, {"from": "Director", "to": "Abhishek Kapur"}, {"from": "Director", "to": "Adarsh H Eshwarappa"}, {"from": "IN", "to": "A R Rahman"}, {"from": "IN", "to": "A V Ravi"}, {"from": "IN", "to": "A Vinoth Kumar"}, {"from": "IN", "to": "A.R. Murugadoss"}, {"from": "IN", "to": "Aadesh Shrivastav"}, {"from": "IN", "to": "Aadhi"}, {"from": "IN", "to": "Aadhira Pandilakshmi"}, {"from": "IN", "to": "Aadi Saikumar"}, {"from": "IN", "to": "Aajeedh Khalique"}, {"from": "IN", "to": "Aakanksha Singh"}, {"from": "IN", "to": "Aaliya Siddiqui"}, {"from": "IN", "to": "Aaman Devgan"}, {"from": "IN", "to": "Aamir Ali Malik"}, {"from": "IN", "to": "Aamir Bashir"}, {"from": "IN", "to": "Aamir Khan"}, {"from": "IN", "to": "Aamna Sharif"}, {"from": "IN", "to": "Aanchal Singh"}, {"from": "IN", "to": "Aaradhya Devi"}, {"from": "IN", "to": "Aarathi (Kannada Actress)"}, {"from": "IN", "to": "Aari (Tamil Actor)"}, {"from": "IN", "to": "Aarthi"}, {"from": "IN", "to": "Aarti Chhabria"}, {"from": "IN", "to": "Aartii Naagpal"}, {"from": "IN", "to": "Aashika Bhatia"}, {"from": "IN", "to": "Aashiq Abu"}, {"from": "IN", "to": "Aasif Mandvi"}, {"from": "IN", "to": "Aathmika"}, {"from": "IN", "to": "Aayush Sharma"}, {"from": "IN", "to": "Aayushi Jaiswal"}, {"from": "IN", "to": "Abbas (Tamil Actor)"}, {"from": "IN", "to": "Abbas Tyrewala"}, {"from": "IN", "to": "Abdu Rozik"}, {"from": "IN", "to": "Abhay Bethiganti"}, {"from": "IN", "to": "Abhay Deol"}, {"from": "IN", "to": "Abhay Simha"}, {"from": "IN", "to": "Abhi Basavaraj"}, {"from": "IN", "to": "Abhijeet Bhattacharya"}, {"from": "IN", "to": "Abhijeet Sawant"}, {"from": "IN", "to": "Abhijit (Kannada Actor)"}, {"from": "IN", "to": "Abhilash Pillai"}, {"from": "IN", "to": "Abhimann Roy"}, {"from": "IN", "to": "Abhimanyu Dassani"}, {"from": "IN", "to": "Abhimanyu Kashinath"}, {"from": "IN", "to": "Abhinav Kashyap"}, {"from": "IN", "to": "Abhinav Shukla"}, {"from": "IN", "to": "Abhinaya"}, {"from": "IN", "to": "Abhinaya (Old Kannada Actress)"}, {"from": "IN", "to": "Abhinaya Sri"}, {"from": "IN", "to": "Abhirami"}, {"from": "IN", "to": "Abhirami Venkatachalam"}, {"from": "IN", "to": "Abhishek (Telugu Actor)"}, {"from": "IN", "to": "Abhishek Ambareesh"}, {"from": "IN", "to": "Abhishek Bachchan"}, {"from": "IN", "to": "Abhishek Bannerjee"}, {"from": "IN", "to": "Abhishek Jayadeep"}, {"from": "IN", "to": "Abhishek Kapoor"}, {"from": "IN", "to": "Abhishek Kapur"}, {"from": "IN", "to": "Abhishek kumar"}, {"from": "IN", "to": "Abhishek Kumar"}, {"from": "IN", "to": "Abhishek Malhan"}, {"from": "IN", "to": "Abhishek Sreekumar"}, {"from": "IN", "to": "Abijeeth Duddala"}, {"from": "IN", "to": "Abrar Zahoor"}, {"from": "IN", "to": "Abyuktha Manikandan"}, {"from": "IN", "to": "Achint Kaur"}, {"from": "IN", "to": "Achyuth Kumar"}, {"from": "IN", "to": "Adah Sharma"}, {"from": "IN", "to": "Adam Herschman"}, {"from": "IN", "to": "Adam Levine"}, {"from": "IN", "to": "Adam Pasha"}, {"from": "IN", "to": "Adam Rothenberg"}, {"from": "IN", "to": "Adarsh Balakrishna"}, {"from": "IN", "to": "Ade"}, {"from": "A R Rahman", "to": 2362}, {"from": "A R Rahman", "to": "Music Director,Singer,Lyricst,Producer,Actor,Story"}, {"from": "A R Rahman", "to": "Music Director"}, {"from": "A R Rahman", "to": "06 Jan 1966"}, {"from": "A R Rahman", "to": "Kodambakkam, Chennai"}, {"from": "A R Rahman", "to": "arrahman"}, {"from": "Music Director", "to": "Aadesh Shrivastav"}, {"from": "Music Director", "to": "Abhimann Roy"}, {"from": "Music Director", "to": "Abu Malik"}, {"from": "A V Ravi", "to": 24270}, {"from": "A V Ravi", "to": "Actor"}, {"from": "Actor", "to": "Aadhi"}, {"from": "Actor", "to": "Aadi Saikumar"}, {"from": "Actor", "to": "Aahil Khan"}, {"from": "Actor", "to": "Aajeedh Khalique"}, {"from": "Actor", "to": "Aaman Devgan"}, {"from": "Actor", "to": "Aamir Ali Malik"}, {"from": "Actor", "to": "Aamir Bashir"}, {"from": "Actor", "to": "Aamir Khan"}, {"from": "Actor", "to": "Aari (Tamil Actor)"}, {"from": "Actor", "to": "Aaron Eckhart"}, {"from": "Actor", "to": "Aaron Johnson"}, {"from": "Actor", "to": "Aaron Paul"}, {"from": "Actor", "to": "Aaron Yoo"}, {"from": "Actor", "to": "Aarun Nagar"}, {"from": "Actor", "to": "Aasif Khan"}, {"from": "Actor", "to": "Aasif Mandvi"}, {"from": "Actor", "to": "Aayush Sharma"}, {"from": "Actor", "to": "Abbas (Tamil Actor)"}, {"from": "Actor", "to": "Abbas Hassan"}, {"from": "Actor", "to": "Abhay Bethiganti"}, {"from": "Actor", "to": "Abhay Deol"}, {"from": "Actor", "to": "Abhi (Kannada Actor)"}, {"from": "Actor", "to": "Abhijit (Kannada Actor)"}, {"from": "Actor", "to": "Abhijit Sinha"}, {"from": "Actor", "to": "Abhimanyu Dassani"}, {"from": "Actor", "to": "Abhimanyu Kashinath"}, {"from": "Actor", "to": "Abhinay Vaddi"}, {"from": "Actor", "to": "Abhishek (Telugu Actor)"}, {"from": "Actor", "to": "Abhishek Ambareesh"}, {"from": "Actor", "to": "Abhishek Bachchan"}, {"from": "Actor", "to": "Abhishek Bannerjee"}, {"from": "Actor", "to": "Abhishek Das"}, {"from": "Actor", "to": "Abhishek kumar"}, {"from": "Actor", "to": "Abhishek Kumar"}, {"from": "Actor", "to": "Abi"}, {"from": "Actor", "to": "Abi Saravanan"}, {"from": "Actor", "to": "Abijeeth Duddala"}, {"from": "Actor", "to": "Abishek Raja"}, {"from": "Actor", "to": "Abrar Zahoor"}, {"from": "Actor", "to": "Abyuktha Manikandan"}, {"from": "Actor", "to": "Achyuth Kumar"}, {"from": "Actor", "to": "Adam Herschman"}, {"from": "Actor", "to": "Adam Levine"}, {"from": "Actor", "to": "Adam Rodriguez"}, {"from": "Actor", "to": "Adam Rothenberg"}, {"from": "Actor", "to": "Adam Sandler"}, {"from": "Actor", "to": "Adarsh Balakrishna"}, {"from": "Actor", "to": "Ade"}, {"from": "A Vinoth Kumar", "to": 50319}, {"from": "A Vinoth Kumar", "to": "dir_vinothkumar"}, {"from": "A.R. Murugadoss", "to": 2361}, {"from": "A.R. Murugadoss", "to": "Director,Producer,Story,Screenplay"}, {"from": "A.R. Murugadoss", "to": "25 Sep 1974"}, {"from": "A.R. Murugadoss", "to": "Trichy, Tamilnadu."}, {"from": "A.R. Murugadoss", "to": "ARMurugadoss"}, {"from": "Aadesh Shrivastav", "to": 2549}, {"from": "Aadesh Shrivastav", "to": "Music Director,Singer,Actor"}, {"from": "Aadesh Shrivastav", "to": "04 Sep 1966"}, {"from": "Aadhi", "to": 9177}, {"from": "Aadhi", "to": "14 Dec 1982"}, {"from": "Aadhi", "to": "Chennai"}, {"from": "Chennai", "to": "Aadhira Pandilakshmi"}, {"from": "Chennai", "to": "Abyuktha Manikandan"}, {"from": "Aadhira Pandilakshmi", "to": 43567}, {"from": "Aadhira Pandilakshmi", "to": "Actress"}, {"from": "Aadhira Pandilakshmi", "to": "female"}, {"from": "Aadhira Pandilakshmi", "to": "22 Apr 1978"}, {"from": "Aadhira Pandilakshmi", "to": "AadhiraOfficial"}, {"from": "Actress", "to": "Aaditi Pohankar"}, {"from": "Actress", "to": "Aakanksha Singh"}, {"from": "Actress", "to": "Aamna Sharif"}, {"from": "Actress", "to": "Aanchal Goswami"}, {"from": "Actress", "to": "Aanchal Singh"}, {"from": "Actress", "to": "Aaradhya Devi"}, {"from": "Actress", "to": "Aarathi (Kannada Actress)"}, {"from": "Actress", "to": "Aarjavee"}, {"from": "Actress", "to": "Aarthi"}, {"from": "Actress", "to": "Aarti Chhabria"}, {"from": "Actress", "to": "Aathmika"}, {"from": "Actress", "to": "Abhinaya"}, {"from": "Actress", "to": "Abhinaya (Old Kannada Actress)"}, {"from": "Actress", "to": "Abhinaya Sri"}, {"from": "Actress", "to": "Abhirami"}, {"from": "Actress", "to": "Abhirami Venkatachalam"}, {"from": "Actress", "to": "Achint Kaur"}, {"from": "Actress", "to": "Adah Sharma"}, {"from": "female", "to": "Aaditi Pohankar"}, {"from": "female", "to": "Aakanksha Singh"}, {"from": "female", "to": "Aaliya Siddiqui"}, {"from": "female", "to": "Aamna Sharif"}, {"from": "female", "to": "Aanchal Goswami"}, {"from": "female", "to": "Aanchal Singh"}, {"from": "female", "to": "Aaradhya Devi"}, {"from": "female", "to": "Aarathi (Kannada Actress)"}, {"from": "female", "to": "Aarjavee"}, {"from": "female", "to": "Aarthi"}, {"from": "female", "to": "Aarti Chhabria"}, {"from": "female", "to": "Aartii Naagpal"}, {"from": "female", "to": "Aashika Bhatia"}, {"from": "female", "to": "Aashiq Abu"}, {"from": "female", "to": "Aathmika"}, {"from": "female", "to": "Aayushi Jaiswal"}, {"from": "female", "to": "Abhimann Roy"}, {"from": "female", "to": "Abhinaya"}, {"from": "female", "to": "Abhinaya (Old Kannada Actress)"}, {"from": "female", "to": "Abhinaya Sri"}, {"from": "female", "to": "Abhirami"}, {"from": "female", "to": "Abhirami Venkatachalam"}, {"from": "female", "to": "Abi"}, {"from": "female", "to": "Abrar Zahoor"}, {"from": "female", "to": "Abyuktha Manikandan"}, {"from": "female", "to": "Achint Kaur"}, {"from": "female", "to": "Adah Sharma"}, {"from": "female", "to": "Adam Pasha"}, {"from": "female", "to": "Adele Romanski"}, {"from": "Aadi Saikumar", "to": 23530}, {"from": "Aadi Saikumar", "to": "23 Dec 1987"}, {"from": "Aadi Saikumar", "to": "Madras, Tamil Nadu"}, {"from": "Aaditi Pohankar", "to": 37447}, {"from": "Aahil Khan", "to": 52689}, {"from": "Aajeedh Khalique", "to": 48033}, {"from": "Aajeedh Khalique", "to": "Actor,Singer"}, {"from": "Aakanksha Singh", "to": 37793}, {"from": "Aakanksha Singh", "to": "30 Jul 1990"}, {"from": "Aakanksha Singh", "to": "Jaipur, Rajasthan"}, {"from": "Aaliya Siddiqui", "to": 53803}, {"from": "Aaliya Siddiqui", "to": "18 Apr 1977"}, {"from": "Aaliya Siddiqui", "to": "Jabalpur, Madhya Pradesh"}, {"from": "Aaliya Siddiqui", "to": "ASiddiqui2020"}, {"from": "Aaman Devgan", "to": 64809}, {"from": "Aaman Devgan", "to": "18 Feb 0"}, {"from": "Aamir Ali Malik", "to": 23174}, {"from": "Aamir Ali Malik", "to": "01 Sep 1977"}, {"from": "Aamir Ali Malik", "to": "Mumbai"}, {"from": "Mumbai", "to": "Aamna Sharif"}, {"from": "Mumbai", "to": "Aasif Mandvi"}, {"from": "Mumbai", "to": "Abhijeet Sawant"}, {"from": "Mumbai", "to": "Adah Sharma"}, {"from": "Aamir Bashir", "to": 2413}, {"from": "Aamir Bashir", "to": "Kashmir"}, {"from": "Aamir Khan", "to": 2360}, {"from": "Aamir Khan", "to": "Actor,Producer,Singer,Director"}, {"from": "Aamir Khan", "to": "14 Mar 1965"}, {"from": "Aamir Khan", "to": "Mumbai, Maharashtra"}, {"from": "Mumbai, Maharashtra", "to": "Abhishek Bachchan"}, {"from": "Aamna Sharif", "to": 10475}, {"from": "Aamna Sharif", "to": "16 Jul 1982"}, {"from": "Aanchal Goswami", "to": 57655}, {"from": "Aanchal Singh", "to": 29864}, {"from": "Aanchal Singh", "to": "05 Apr 1992"}, {"from": "Aanchal Singh", "to": "Chandigarh"}, {"from": "Aaradhya Devi", "to": 61059}, {"from": "Aaradhya Devi", "to": "Kottayam"}, {"from": "Aaradhya Devi", "to": "IamAaradhyaDevi"}, {"from": "Aarathi (Kannada Actress)", "to": 18671}, {"from": "Aarathi (Kannada Actress)", "to": "Actress,Producer"}, {"from": "Aari (Tamil Actor)", "to": 27782}, {"from": "Aarjavee", "to": 48484}, {"from": "Aaron Eckhart", "to": 5365}, {"from": "Aaron Eckhart", "to": "12 Mar 1968"}, {"from": "Aaron Eckhart", "to": "Cupertino, California"}, {"from": "Aaron Eckhart", "to": "US"}, {"from": "US", "to": "Aaron Paul"}, {"from": "US", "to": "Aaron Yoo"}, {"from": "US", "to": "Adam Rodriguez"}, {"from": "US", "to": "Adam Sandler"}, {"from": "Aaron Johnson", "to": 9183}, {"from": "Aaron Johnson", "to": "13 Jun 1990"}, {"from": "Aaron Johnson", "to": "High Wycombe, England"}, {"from": "Aaron Johnson", "to": "GB"}, {"from": "Aaron Paul", "to": 8988}, {"from": "Aaron Paul", "to": "29 Aug 1979"}, {"from": "Aaron Paul", "to": "Emmett, Idaho"}, {"from": "Aaron Yoo", "to": 7380}, {"from": "Aaron Yoo", "to": "12 May 1979"}, {"from": "Aaron Yoo", "to": "New Jersey"}, {"from": "Aarthi", "to": 11134}, {"from": "Aarthi", "to": "09 Nov 1987"}, {"from": "Aarti Chhabria", "to": 929}, {"from": "Aarti Chhabria", "to": "21 Nov 1982"}, {"from": "Aartii Naagpal", "to": 58514}, {"from": "Aartii Naagpal", "to": "10 Nov 1979"}, {"from": "Aartii Naagpal", "to": "Mumbai, India"}, {"from": "Aartii Naagpal", "to": "aartiinaagpal"}, {"from": "Aarun Nagar", "to": 46760}, {"from": "Aarun Nagar", "to": "Actor,Director,Editing"}, {"from": "Aarun Nagar", "to": "02 Aug 1982"}, {"from": "Aashika Bhatia", "to": 58498}, {"from": "Aashika Bhatia", "to": "15 Dec 1999"}, {"from": "Aashika Bhatia", "to": "Surat, Gujarat"}, {"from": "Aashiq Abu", "to": 9620}, {"from": "Aashiq Abu", "to": "Director,Producer,Cinematography,Actor"}, {"from": "Aashiq Abu", "to": "12 Apr 1978"}, {"from": "Aasif Khan", "to": 44328}, {"from": "Aasif Mandvi", "to": 8880}, {"from": "Aasif Mandvi", "to": "05 Mar 1966"}, {"from": "Aathmika", "to": 37131}, {"from": "Aathmika", "to": "09 Feb 1993"}, {"from": "Aayush Sharma", "to": 39725}, {"from": "Aayush Sharma", "to": "26 Oct 1990"}, {"from": "Aayush Sharma", "to": "Mandi, Himachal Pradesh"}, {"from": "Aayushi Jaiswal", "to": 58921}, {"from": "Aayushi Jaiswal", "to": "27 Aug 1996"}, {"from": "Aayushi Jaiswal", "to": "Lucknow, Uttar Pradesh"}, {"from": "Abbas (Tamil Actor)", "to": 3893}, {"from": "Abbas (Tamil Actor)", "to": "21 May 1975"}, {"from": "Abbas (Tamil Actor)", "to": "Calcutta"}, {"from": "Abbas Hassan", "to": 27991}, {"from": "Abbas Hassan", "to": "Canada"}, {"from": "Abbas Hassan", "to": "PK"}, {"from": "Abbas Tyrewala", "to": 898}, {"from": "Abbas Tyrewala", "to": "Lyricst,Director,Dialogues"}, {"from": "Abbas Tyrewala", "to": "Lyricst"}, {"from": "Abdu Rozik", "to": 54271}, {"from": "Abhay Bethiganti", "to": 39409}, {"from": "Abhay Bethiganti", "to": "Actor,Director"}, {"from": "Abhay Bethiganti", "to": "01 Nov 1991"}, {"from": "Abhay Bethiganti", "to": "Siddipet, Telangana"}, {"from": "Abhay Deol", "to": 48}, {"from": "Abhay Deol", "to": "Actor,Producer"}, {"from": "Abhay Deol", "to": "15 Mar 1976"}, {"from": "Actor,Producer", "to": "Adam Sandler"}, {"from": "Abhay Simha", "to": 15525}, {"from": "Abhi (Kannada Actor)", "to": 41537}, {"from": "Abhi Basavaraj", "to": 62183}, {"from": "Abhijeet Bhattacharya", "to": 123}, {"from": "Abhijeet Bhattacharya", "to": "Singer"}, {"from": "Abhijeet Bhattacharya", "to": "30 Oct 1958"}, {"from": "Singer", "to": "Abhijeet Sawant"}, {"from": "Abhijeet Sawant", "to": 8341}, {"from": "Abhijeet Sawant", "to": "Singer,Actor"}, {"from": "Abhijeet Sawant", "to": "07 Oct 1981"}, {"from": "Abhijit (Kannada Actor)", "to": 12519}, {"from": "Abhijit (Kannada Actor)", "to": "Actor,Director,Producer"}, {"from": "Abhijit (Kannada Actor)", "to": "30 Jul 1963"}, {"from": "Abhijit (Kannada Actor)", "to": "Chellakere, Chitradurga district, Karnataka"}, {"from": "Abhijit Sinha", "to": 48152}, {"from": "Abhijit Sinha", "to": "25 Apr 1977"}, {"from": "Abhilash Joshiy", "to": 50053}, {"from": "Abhilash Pillai", "to": 50799}, {"from": "Abhilash Pillai", "to": "Screenplay,Story"}, {"from": "Abhilash Pillai", "to": "Screenplay"}, {"from": "Abhilash Pillai", "to": "17 May 1969"}, {"from": "Abhimann Roy", "to": 12117}, {"from": "Abhimann Roy", "to": "Music Director,Singer,Lyricst"}, {"from": "Abhimann Roy", "to": "16 Feb 1979"}, {"from": "Abhimanyu Dassani", "to": 45429}, {"from": "Abhimanyu Kashinath", "to": 3566}, {"from": "Abhinav Kashyap", "to": 15298}, {"from": "Abhinav Kashyap", "to": "Director,Singer"}, {"from": "Abhinav Kashyap", "to": "Gorakhpur, Uttar Pradesh"}, {"from": "Abhinav Shukla", "to": 32741}, {"from": "Abhinav Shukla", "to": "27 Sep 1982"}, {"from": "Abhinav Shukla", "to": "Ludhiana, Punjab"}, {"from": "Abhinay Vaddi", "to": 32967}, {"from": "Abhinay Vaddi", "to": "18 Mar 1983"}, {"from": "Abhinaya", "to": 30028}, {"from": "Abhinaya", "to": "13 Nov 1991"}, {"from": "Abhinaya", "to": "Rajahmundry, Andhra Pradesh"}, {"from": "Abhinaya", "to": "mgabhinaya"}, {"from": "Abhinaya (Old Kannada Actress)", "to": 32230}, {"from": "Abhinaya Sri", "to": 4593}, {"from": "Abhinaya Sri", "to": "25 Mar 1988"}, {"from": "Abhinaya Sri", "to": "Chennai, Tamil Nadu"}, {"from": "Abhirami", "to": 13388}, {"from": "Abhirami", "to": "Actress,Singer"}, {"from": "Abhirami", "to": "26 Jul 1983"}, {"from": "Abhirami Venkatachalam", "to": 43414}, {"from": "Abhirami Venkatachalam", "to": "09 Mar 0"}, {"from": "Abhirami Venkatachalam", "to": "Chennai, Tamil Nadu."}, {"from": "Abhishek (Telugu Actor)", "to": 15637}, {"from": "Abhishek Ambareesh", "to": 41078}, {"from": "Abhishek Ambareesh", "to": "03 Oct 1993"}, {"from": "Abhishek Ambareesh", "to": "Bengaluru, Karnataka"}, {"from": "Abhishek Bachchan", "to": 1925}, {"from": "Abhishek Bachchan", "to": "Actor,Singer,Producer"}, {"from": "Abhishek Bachchan", "to": "05 Feb 1976"}, {"from": "Abhishek Bachchan", "to": "@juniorbachchan"}, {"from": "Abhishek Bannerjee", "to": 40119}, {"from": "Abhishek Bannerjee", "to": "Actor,Story"}, {"from": "Abhishek Bannerjee", "to": "05 May 1985"}, {"from": "Abhishek Bannerjee", "to": "Kharagpur, West Bengal"}, {"from": "Abhishek Das", "to": 41430}, {"from": "Abhishek Jayadeep", "to": 62711}, {"from": "Abhishek Jayadeep", "to": "Thrissur, Kerala"}, {"from": "Abhishek Kapoor", "to": 337}, {"from": "Abhishek Kapoor", "to": "Director,Story,Producer"}, {"from": "Abhishek Kapur", "to": 45062}, {"from": "Abhishek kumar", "to": 1577}, {"from": "Abhishek kumar", "to": "Actor,Editing"}, {"from": "Abhishek Kumar", "to": 54859}, {"from": "Abhishek Kumar", "to": "26 Aug 1995"}, {"from": "Abhishek Kumar", "to": "Punjab"}, {"from": "Punjab", "to": "Achint Kaur"}, {"from": "Abhishek Malhan", "to": 57864}, {"from": "Abhishek Malhan", "to": "24 May 1997"}, {"from": "Abhishek Malhan", "to": "Pitampura, Delhi"}, {"from": "Abhishek Sreekumar", "to": 62712}, {"from": "Abi", "to": 15087}, {"from": "Abi Saravanan", "to": 44225}, {"from": "Abijeeth Duddala", "to": 31134}, {"from": "Abijeeth Duddala", "to": "11 Oct 1988"}, {"from": "Abijeeth Duddala", "to": "Hyderabad, Andhra Pradesh"}, {"from": "Abinandhan Ramanujam", "to": 42665}, {"from": "Abinandhan Ramanujam", "to": "Cinematography"}, {"from": "Abishek Raja", "to": 42455}, {"from": "Abishek Raja", "to": "Actor,Dialogues"}, {"from": "Abrar Zahoor", "to": 36206}, {"from": "Abu Malik", "to": 1008}, {"from": "Abu Malik", "to": "02 Nov 1960"}, {"from": "Abyuktha Manikandan", "to": 64268}, {"from": "Achint Kaur", "to": 1041}, {"from": "Achint Kaur", "to": "Actress,Lyricst"}, {"from": "Achyuth Kumar", "to": 23336}, {"from": "Achyuth Kumar", "to": "08 Mar 1966"}, {"from": "Achyuth Kumar", "to": "Tiptur, Karnataka"}, {"from": "Achyuth Kumar", "to": "AchyuthChaganti"}, {"from": "Adah Sharma", "to": 2460}, {"from": "Adah Sharma", "to": "11 May 1992"}, {"from": "Adam Herschman", "to": 5773}, {"from": "Adam Levine", "to": 34379}, {"from": "Adam Levine", "to": "18 Mar 1979"}, {"from": "Adam Pasha", "to": 42734}, {"from": "Adam Pasha", "to": "Bangaluru"}, {"from": "Adam Rodriguez", "to": 5473}, {"from": "Adam Rodriguez", "to": "02 Apr 1975"}, {"from": "Adam Rodriguez", "to": "New York City, New York"}, {"from": "Adam Rothenberg", "to": 9307}, {"from": "Adam Sandler", "to": 4621}, {"from": "Adam Sandler", "to": "09 Sep 1966"}, {"from": "Adam Sandler", "to": "Brooklyn, New York"}, {"from": "Adarsh Balakrishna", "to": 25199}, {"from": "Adarsh Balakrishna", "to": "10 Feb 1984"}, {"from": "Adarsh Balakrishna", "to": "Bangalore, Karnatak"}, {"from": "Adarsh Balakrishna", "to": "AadarshBKrishna"}, {"from": "Adarsh H Eshwarappa", "to": 37673}, {"from": "Ade", "to": 6932}, {"from": "Adele Romanski", "to": 37401}]);
+
+                  nodeColors = {};
+                  allNodes = nodes.get({ returnType: "Object" });
+                  for (nodeId in allNodes) {
+                    nodeColors[nodeId] = allNodes[nodeId].color;
+                  }
+                  allEdges = edges.get({ returnType: "Object" });
+                  // adding nodes and edges to the graph
+                  data = {nodes: nodes, edges: edges};
+
+                  var options = {
+    "configure": {
+        "enabled": false
+    },
+    "edges": {
+        "color": {
+            "inherit": true
+        },
+        "smooth": {
+            "enabled": true,
+            "type": "dynamic"
+        }
+    },
+    "interaction": {
+        "dragNodes": true,
+        "hideEdgesOnDrag": false,
+        "hideNodesOnDrag": false
+    },
+    "physics": {
+        "enabled": true,
+        "stabilization": {
+            "enabled": true,
+            "fit": true,
+            "iterations": 1000,
+            "onlyDynamicEdges": false,
+            "updateInterval": 50
+        }
+    }
+};
+
+                  
+
+
+                  
+
+                  network = new vis.Network(container, data, options);
+
+                  
+
+                  
+                    network.on("selectNode", neighbourhoodHighlight);
+                  
+
+                  
+
+
+                  
+                      network.on("stabilizationProgress", function(params) {
+                          document.getElementById('loadingBar').removeAttribute("style");
+                          var maxWidth = 496;
+                          var minWidth = 20;
+                          var widthFactor = params.iterations/params.total;
+                          var width = Math.max(minWidth,maxWidth * widthFactor);
+                          document.getElementById('bar').style.width = width + 'px';
+                          document.getElementById('text').innerHTML = Math.round(widthFactor*100) + '%';
+                      });
+                      network.once("stabilizationIterationsDone", function() {
+                          document.getElementById('text').innerHTML = '100%';
+                          document.getElementById('bar').style.width = '496px';
+                          document.getElementById('loadingBar').style.opacity = 0;
+                          // really clean the dom element
+                          setTimeout(function () {document.getElementById('loadingBar').style.display = 'none';}, 500);
+                      });
+                  
+
+                  return network;
+
+              }
+              drawGraph();
+        </script>
+    </body>
+</html>
